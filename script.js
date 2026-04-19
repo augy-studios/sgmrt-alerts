@@ -30,7 +30,7 @@ const STATION_NAMES = {
     NE5:'Clarke Quay', NE6:'Dhoby Ghaut', NE7:'Little India',
     NE8:'Farrer Park', NE9:'Boon Keng', NE10:'Potong Pasir',
     NE11:'Woodleigh', NE12:'Serangoon', NE13:'Kovan',
-    NE14:'Hougang', NE15:'Buangkok', NE16:'Sengkang', NE17:'Punggol',
+    NE14:'Hougang', NE15:'Buangkok', NE16:'Sengkang', NE17:'Punggol', NE18:'Punggol Coast',
     // Circle Line
     CC1:'Dhoby Ghaut', CC2:'Bras Basah', CC3:'Esplanade',
     CC4:'Promenade', CC5:'Nicoll Highway', CC6:'Stadium',
