@@ -32,7 +32,9 @@ export default async function handler(req, res) {
         );
 
         if (!response.ok) {
-            throw new Error(`LTA API error: ${response.status}`);
+            const body = await response.text().catch(() => '');
+            console.error(`PCDForecast LTA error ${response.status}:`, body);
+            throw new Error(`LTA API error: ${response.status} — ${body}`);
         }
 
         const data = await response.json();
