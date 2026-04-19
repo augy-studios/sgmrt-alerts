@@ -584,12 +584,28 @@ a:hover {
 }
 
 .station-chip {
-  padding: 2px 8px;
+  padding: 3px 10px;
   background: rgba(0, 0, 0, 0.06);
-  border-radius: 50px;
-  font-size: 0.72rem;
+  border-radius: 8px;
+  font-size: 0.78rem;
   color: var(--text-secondary);
+  font-family: 'Noto Sans', sans-serif;
+  letter-spacing: 0.01em;
+  line-height: 1.4;
+}
+
+.chip-code {
+  font-size: 0.65rem;
+  opacity: 0.6;
+  margin-left: 3px;
   font-family: 'Noto Sans', monospace;
+}
+
+.crowd-station-code {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-family: 'Noto Sans', monospace;
+  margin-top: 1px;
   letter-spacing: 0.02em;
 }
 
