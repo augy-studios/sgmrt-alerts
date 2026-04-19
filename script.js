@@ -641,7 +641,10 @@ function renderCrowdNow(data, lineCode) {
 
     filterInput.addEventListener('input', () => {
         const q = filterInput.value.toLowerCase();
-        renderCrowdCards(records.filter(r => r.Station.toLowerCase().includes(q)));
+        renderCrowdCards(records.filter(r =>
+            r.Station.toLowerCase().includes(q) ||
+            (stationName(r.Station) || '').toLowerCase().includes(q)
+        ));
     });
 }
 
