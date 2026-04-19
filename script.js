@@ -290,7 +290,8 @@ function getLineInfo(code) {
 
 function renderAlerts(data) {
     const container = document.getElementById('alerts-content');
-    const alerts = data?.value || [];
+    const raw = data?.value ?? data;
+    const alerts = Array.isArray(raw) ? raw : [];
 
     // Status 1 = normal/minor delays, Status 2 = disrupted
     const disruptions = alerts.filter(a => a.Status === 2);
@@ -390,7 +391,8 @@ async function fetchFacilities() {
 
 function renderLifts(data) {
     const container = document.getElementById('lifts-content');
-    const lifts = data?.value || [];
+    const raw = data?.value ?? data;
+    const lifts = Array.isArray(raw) ? raw : [];
 
     if (lifts.length === 0) {
         container.innerHTML = `
@@ -480,7 +482,8 @@ const CROWD_COLOR = {
 
 function renderCrowdNow(data, lineCode) {
     const container = document.getElementById('crowd-now-content');
-    const records = data?.value || [];
+    const raw = data?.value ?? data;
+    const records = Array.isArray(raw) ? raw : [];
 
     if (records.length === 0) {
         container.innerHTML = `
@@ -560,7 +563,8 @@ async function fetchCrowdForecast(lineCode) {
 
 function renderCrowdForecast(data, lineCode) {
     const container = document.getElementById('crowd-forecast-content');
-    const records = data?.value || [];
+    const raw = data?.value ?? data;
+    const records = Array.isArray(raw) ? raw : [];
 
     if (records.length === 0) {
         container.innerHTML = `
