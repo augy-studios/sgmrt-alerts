@@ -1,7 +1,7 @@
 {
-    "name": "Template by UwU Apps",
-    "short_name": "UwU Template",
-    "description": "A simple template app; view live template at a glance!",
+    "name": "SG MRT Alerts by UwU Apps",
+    "short_name": "SG MRT Alerts",
+    "description": "Real-time Singapore MRT situational awareness at your fingertips.",
     "icons": [{
         "src": "templateicon1.png",
         "type": "image/png",

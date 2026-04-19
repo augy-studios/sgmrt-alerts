@@ -20,14 +20,14 @@
     <link rel="manifest" href="/manifest.json" />
 
     <meta charset="utf-8">
-    <title>Template | UwU Apps</title>
+    <title>SG MRT Alerts | UwU Apps</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="A simple template app; view live template at a glance!">
+    <meta name="description" content="Real-time Singapore MRT situational awareness at your fingertips.">
 
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Template | UwU Apps" />
+    <meta property="og:title" content="SG MRT Alerts | UwU Apps" />
     <meta property="og:site_name" content="UwU Apps" />
-    <meta property="og:description" content="A simple template app; view live template at a glance!" />
+    <meta property="og:description" content="Real-time Singapore MRT situational awareness at your fingertips." />
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Jua">
     <link rel="stylesheet" href="/style.css">
@@ -45,17 +45,243 @@
     <script defer="" src="https://use.fontawesome.com/releases/v6.5.2/js/all.js"></script>
 </head>
 
-<body>
-    Template
+<body data-theme="classic">
+    <!-- Theme Modal -->
+    <div id="theme-modal" class="modal-overlay" hidden>
+        <div class="modal-box glass">
+            <div class="modal-header">
+                <span class="modal-title">Choose Theme</span>
+                <button class="modal-close" id="modal-close-btn" aria-label="Close">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </button>
+            </div>
+            <div class="theme-grid">
+                <button class="theme-swatch active" data-theme="classic" style="--sw:#ccffcc" title="Classic">
+                    <span class="swatch-dot"></span>
+                    <span>Classic</span>
+                </button>
+                <button class="theme-swatch" data-theme="rose" style="--sw:#ffcccc" title="Not green 1">
+                    <span class="swatch-dot"></span>
+                    <span>Rosy</span>
+                </button>
+                <button class="theme-swatch" data-theme="lavender" style="--sw:#ccccff" title="Not green 2">
+                    <span class="swatch-dot"></span>
+                    <span>Lavender</span>
+                </button>
+                <button class="theme-swatch" data-theme="butter" style="--sw:#ffffcc" title="Not green 3">
+                    <span class="swatch-dot"></span>
+                    <span>Butter</span>
+                </button>
+                <button class="theme-swatch" data-theme="lilac" style="--sw:#ffccff" title="Not green 4">
+                    <span class="swatch-dot"></span>
+                    <span>Lilac</span>
+                </button>
+                <button class="theme-swatch" data-theme="sky" style="--sw:#ccffff" title="Not green 5">
+                    <span class="swatch-dot"></span>
+                    <span>Sky</span>
+                </button>
+                <button class="theme-swatch" data-theme="white" style="--sw:#f0f0f0" title="Really really light green">
+                    <span class="swatch-dot"></span>
+                    <span>Frost</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="app-header glass">
+        <div class="header-inner">
+            <div class="brand">
+                <svg class="brand-icon" width="32" height="32" viewBox="0 0 32 32" fill="none"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <rect width="32" height="32" rx="8" fill="var(--brand)" />
+                    <rect x="5" y="13" width="22" height="6" rx="3" fill="white" opacity="0.9" />
+                    <rect x="5" y="13" width="6" height="6" rx="3" fill="white" />
+                    <rect x="21" y="13" width="6" height="6" rx="3" fill="white" />
+                    <rect x="14" y="10" width="4" height="3" rx="1" fill="white" opacity="0.7" />
+                    <circle cx="9" cy="22" r="2" fill="white" opacity="0.8" />
+                    <circle cx="23" cy="22" r="2" fill="white" opacity="0.8" />
+                </svg>
+                <div>
+                    <div class="brand-name">SG MRT Alerts</div>
+                    <div class="brand-sub">Real-time situational awareness</div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="last-updated" id="last-updated">—</div>
+                <button class="icon-btn" id="theme-btn" aria-label="Change theme" title="Change theme">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5" />
+                        <path
+                            d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+                    </svg>
+                </button>
+                <button class="icon-btn" id="refresh-btn" aria-label="Refresh data" title="Refresh">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 4 23 10 17 10" />
+                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Status Banner -->
+    <div class="status-banner" id="status-banner" hidden>
+        <div class="status-banner-inner">
+            <span id="status-icon"></span>
+            <span id="status-text"></span>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <nav class="tab-nav" role="tablist">
+        <button class="tab-btn active" data-tab="alerts" role="tab" aria-selected="true">
+            <svg class="tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            <span>Alerts</span>
+        </button>
+        <button class="tab-btn" data-tab="lifts" role="tab" aria-selected="false">
+            <svg class="tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="5" y="2" width="14" height="20" rx="2" />
+                <path d="M9 10l3-3 3 3" />
+                <path d="M9 14l3 3 3-3" />
+            </svg>
+            <span>Lifts</span>
+        </button>
+        <button class="tab-btn" data-tab="crowd-now" role="tab" aria-selected="false">
+            <svg class="tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+            <span>Crowd Now</span>
+        </button>
+        <button class="tab-btn" data-tab="crowd-forecast" role="tab" aria-selected="false">
+            <svg class="tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+                <polyline points="8 14 10 16 16 12" />
+            </svg>
+            <span>Forecast</span>
+        </button>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- Alerts Tab -->
+        <section id="tab-alerts" class="tab-panel active" role="tabpanel">
+            <div class="section-header">
+                <h2>Train Service Alerts</h2>
+                <p class="section-desc">Live disruptions and delays on MRT/LRT lines</p>
+            </div>
+            <div id="alerts-content" class="content-area">
+                <div class="loading-state">
+                    <div class="spinner"></div>
+                    <span>Loading alerts...</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Lifts Tab -->
+        <section id="tab-lifts" class="tab-panel" role="tabpanel" hidden>
+            <div class="section-header">
+                <h2>Lift Maintenance</h2>
+                <p class="section-desc">Lifts currently under maintenance at MRT stations</p>
+            </div>
+            <div id="lifts-content" class="content-area">
+                <div class="loading-state">
+                    <div class="spinner"></div>
+                    <span>Loading lift status...</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Crowd Now Tab -->
+        <section id="tab-crowd-now" class="tab-panel" role="tabpanel" hidden>
+            <div class="section-header">
+                <h2>Real-time Crowd Density</h2>
+                <p class="section-desc">Current crowdedness at stations — updated every 10 minutes</p>
+            </div>
+            <div class="line-selector-wrap">
+                <label class="line-selector-label" for="crowd-now-line">Select Line</label>
+                <div class="line-selector-grid" id="crowd-now-line-grid">
+                    <!-- populated by JS -->
+                </div>
+            </div>
+            <div id="crowd-now-content" class="content-area">
+                <div class="idle-state">
+                    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round" stroke-linejoin="round" opacity="0.4">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                    <p>Select a train line above to view crowd levels</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Crowd Forecast Tab -->
+        <section id="tab-crowd-forecast" class="tab-panel" role="tabpanel" hidden>
+            <div class="section-header">
+                <h2>Crowd Density Forecast</h2>
+                <p class="section-desc">Plan your trip with 30-minute interval forecasts</p>
+            </div>
+            <div class="line-selector-wrap">
+                <label class="line-selector-label">Select Line</label>
+                <div class="line-selector-grid" id="crowd-forecast-line-grid">
+                    <!-- populated by JS -->
+                </div>
+            </div>
+            <div id="crowd-forecast-content" class="content-area">
+                <div class="idle-state">
+                    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round" stroke-linejoin="round" opacity="0.4">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                        <line x1="16" y1="2" x2="16" y2="6" />
+                        <line x1="8" y1="2" x2="8" y2="6" />
+                        <line x1="3" y1="10" x2="21" y2="10" />
+                    </svg>
+                    <p>Select a train line above to view the forecast</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="app-footer">
+        <span>Data from <a href="https://datamall.lta.gov.sg" target="_blank" rel="noopener">LTA DataMall</a></span>
+        <span class="footer-sep">·</span>
+        <span>mrtalerts.uwuapps.org</span>
+    </footer>
 
     <script src="/script.js"></script>
 
     <script>
         if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.register('/sw.js');
+            navigator.serviceWorker.register('/sw.js');
         }
     </script>
-    
+
 </body>
 
 </html>
