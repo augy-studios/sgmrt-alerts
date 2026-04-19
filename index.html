@@ -170,17 +170,6 @@
             </svg>
             <span>Crowd Now</span>
         </button>
-        <button class="tab-btn" data-tab="crowd-forecast" role="tab" aria-selected="false">
-            <svg class="tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                <line x1="16" y1="2" x2="16" y2="6" />
-                <line x1="8" y1="2" x2="8" y2="6" />
-                <line x1="3" y1="10" x2="21" y2="10" />
-                <polyline points="8 14 10 16 16 12" />
-            </svg>
-            <span>Forecast</span>
-        </button>
     </nav>
 
     <!-- Main Content -->
@@ -236,32 +225,6 @@
                         <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                     </svg>
                     <p>Select a train line above to view crowd levels</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Crowd Forecast Tab -->
-        <section id="tab-crowd-forecast" class="tab-panel" role="tabpanel" hidden>
-            <div class="section-header">
-                <h2>Crowd Density Forecast</h2>
-                <p class="section-desc">Plan your trip with 30-minute interval forecasts</p>
-            </div>
-            <div class="line-selector-wrap">
-                <label class="line-selector-label">Select Line</label>
-                <div class="line-selector-grid" id="crowd-forecast-line-grid">
-                    <!-- populated by JS -->
-                </div>
-            </div>
-            <div id="crowd-forecast-content" class="content-area">
-                <div class="idle-state">
-                    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                        stroke-linecap="round" stroke-linejoin="round" opacity="0.4">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                        <line x1="16" y1="2" x2="16" y2="6" />
-                        <line x1="8" y1="2" x2="8" y2="6" />
-                        <line x1="3" y1="10" x2="21" y2="10" />
-                    </svg>
-                    <p>Select a train line above to view the forecast</p>
                 </div>
             </div>
         </section>

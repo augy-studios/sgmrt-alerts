@@ -210,7 +210,6 @@ const THEMES = [
 
 // ── State ──
 let selectedCrowdNowLine = null;
-let selectedForecastLine = null;
 let currentTab = 'alerts';
 let refreshTimer = null;
 
@@ -286,38 +285,31 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 
 // ── Line Selectors ──
 function buildLineSelectors() {
-    ['crowd-now-line-grid', 'crowd-forecast-line-grid'].forEach((gridId, idx) => {
-        const grid = document.getElementById(gridId);
-        if (!grid) return;
-        grid.innerHTML = '';
-        LINES.forEach(line => {
-            const pill = document.createElement('button');
-            pill.className = 'line-pill';
-            pill.textContent = line.label;
-            pill.dataset.code = line.code;
-            pill.style.setProperty('--line-color', line.color);
-            pill.title = line.code;
-            pill.addEventListener('click', () => {
-                grid.querySelectorAll('.line-pill').forEach(p => p.classList.remove('active'));
-                pill.classList.add('active');
-                if (idx === 0) {
-                    selectedCrowdNowLine = line.code;
-                    fetchCrowdNow(line.code);
-                } else {
-                    selectedForecastLine = line.code;
-                    fetchCrowdForecast(line.code);
-                }
-            });
-            grid.appendChild(pill);
+    const grid = document.getElementById('crowd-now-line-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    LINES.forEach(line => {
+        const pill = document.createElement('button');
+        pill.className = 'line-pill';
+        pill.textContent = line.label;
+        pill.dataset.code = line.code;
+        pill.style.setProperty('--line-color', line.color);
+        pill.title = line.code;
+        pill.addEventListener('click', () => {
+            grid.querySelectorAll('.line-pill').forEach(p => p.classList.remove('active'));
+            pill.classList.add('active');
+            selectedCrowdNowLine = line.code;
+            fetchCrowdNow(line.code);
         });
-        if (idx === 0 && !selectedCrowdNowLine) {
-            const firstPill = grid.querySelector('.line-pill');
-            if (firstPill) {
-                firstPill.classList.add('active');
-                selectedCrowdNowLine = LINES[0].code;
-            }
-        }
+        grid.appendChild(pill);
     });
+    if (!selectedCrowdNowLine) {
+        const firstPill = grid.querySelector('.line-pill');
+        if (firstPill) {
+            firstPill.classList.add('active');
+            selectedCrowdNowLine = LINES[0].code;
+        }
+    }
 }
 
 // ── Fetch Helpers ──
@@ -653,107 +645,6 @@ function renderCrowdNow(data, lineCode) {
     });
 }
 
-// ── Crowd Forecast ──
-async function fetchCrowdForecast(lineCode) {
-    setLoading('crowd-forecast-content', `Loading forecast for ${lineCode}…`);
-    try {
-        const data = await apiFetch(`/api/crowd-forecast?line=${encodeURIComponent(lineCode)}`);
-        renderCrowdForecast(data, lineCode);
-        updateTimestamp();
-    } catch (err) {
-        setError('crowd-forecast-content', 'Unable to load crowd forecast. Please try again.');
-        console.error(err);
-    }
-}
-
-function renderCrowdForecast(data, lineCode) {
-    const container = document.getElementById('crowd-forecast-content');
-    const raw = data?.value ?? data;
-    const records = Array.isArray(raw) ? raw : [];
-
-    if (records.length === 0) {
-        container.innerHTML = `
-      <div class="all-clear">
-        <span class="all-clear-icon">
-          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.5" stroke-linecap="round" opacity="0.6">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-            <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
-            <line x1="3" y1="10" x2="21" y2="10"/>
-          </svg>
-        </span>
-        <h3 style="color:var(--text-muted)">No Forecast Available</h3>
-        <p>Crowd forecast is not available for ${lineCode} at this time.</p>
-      </div>`;
-        return;
-    }
-
-    // Group by station, collect time slots
-    const stationMap = {};
-    const timeSlots = new Set();
-    records.forEach(r => {
-        const station = r.Station;
-        const time = formatTime(r.Start);
-        if (!stationMap[station]) stationMap[station] = {};
-        stationMap[station][time] = (r.CrowdLevel || 'na').toLowerCase();
-        timeSlots.add(time);
-    });
-
-    // Sort time slots
-    const sortedTimes = Array.from(timeSlots).sort();
-    const stations = Object.keys(stationMap).sort();
-
-    // Limit columns for readability: show current + next 8 slots
-    const now = new Date();
-    const currentHHMM = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-    let startIdx = sortedTimes.findIndex(t => t >= currentHHMM);
-    if (startIdx < 0) startIdx = 0;
-    const visibleTimes = sortedTimes.slice(startIdx, startIdx + 10);
-
-    container.innerHTML = `
-    <div class="section-actions">
-      <span class="results-count">${stations.length} stations · showing next ${visibleTimes.length} time slots</span>
-      <input class="filter-input" id="forecast-filter" placeholder="Filter station…" aria-label="Filter stations" />
-    </div>
-    <div class="forecast-wrap">
-      <table class="forecast-table" id="forecast-table">
-        <thead>
-          <tr>
-            <th>Station</th>
-            ${visibleTimes.map(t => `<th>${t}</th>`).join('')}
-          </tr>
-        </thead>
-        <tbody id="forecast-body"></tbody>
-      </table>
-    </div>`;
-
-    const tbody = document.getElementById('forecast-body');
-    const filterInput = document.getElementById('forecast-filter');
-
-    function renderRows(list) {
-        tbody.innerHTML = '';
-        list.forEach(station => {
-            const tr = document.createElement('tr');
-            const forecastName = stationName(station);
-            let cells = `<td><strong>${forecastName || station}</strong>${forecastName ? `<div class="crowd-station-code">${station}</div>` : ''}</td>`;
-            visibleTimes.forEach(t => {
-                const lvl = stationMap[station][t] || 'na';
-                cells += `<td><span class="crowd-dot ${lvl}"></span>${CROWD_LABEL[lvl] || 'N/A'}</td>`;
-            });
-            tr.innerHTML = cells;
-            tbody.appendChild(tr);
-        });
-        if (list.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="${visibleTimes.length + 1}" style="text-align:center;color:var(--text-muted);padding:20px">No matching stations.</td></tr>`;
-        }
-    }
-
-    renderRows(stations);
-    filterInput.addEventListener('input', () => {
-        const q = filterInput.value.toLowerCase();
-        renderRows(stations.filter(s => s.toLowerCase().includes(q)));
-    });
-}
-
 // ── Helpers ──
 function formatTime(isoStr) {
     if (!isoStr) return '';
@@ -805,9 +696,6 @@ function loadCurrentTab() {
             break;
         case 'crowd-now':
             if (selectedCrowdNowLine) fetchCrowdNow(selectedCrowdNowLine);
-            break;
-        case 'crowd-forecast':
-            if (selectedForecastLine) fetchCrowdForecast(selectedForecastLine);
             break;
     }
 }
