@@ -160,11 +160,6 @@ html {
 body {
   font-family: 'Noto Sans', sans-serif;
   background-color: var(--bg-base);
-  background-image:
-    radial-gradient(ellipse at 20% 10%, var(--bg-mesh1) 0%, transparent 55%),
-    radial-gradient(ellipse at 80% 80%, var(--bg-mesh2) 0%, transparent 55%),
-    radial-gradient(ellipse at 60% 30%, rgba(255, 255, 255, 0.6) 0%, transparent 50%);
-  background-attachment: fixed;
   color: var(--text-primary);
   min-height: 100vh;
   transition: background-color var(--transition), color var(--transition);
