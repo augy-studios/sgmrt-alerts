@@ -263,6 +263,12 @@ a:hover {
   transform: scale(0.96);
 }
 
+.coffee-btn {
+  text-decoration: none;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
 .icon-btn.spinning svg {
   animation: spin 0.8s linear infinite;
 }
