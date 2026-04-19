@@ -310,6 +310,13 @@ function buildLineSelectors() {
             });
             grid.appendChild(pill);
         });
+        if (idx === 0 && !selectedCrowdNowLine) {
+            const firstPill = grid.querySelector('.line-pill');
+            if (firstPill) {
+                firstPill.classList.add('active');
+                selectedCrowdNowLine = LINES[0].code;
+            }
+        }
     });
 }
 
@@ -567,10 +574,20 @@ const CROWD_COLOR = {
     na: '#9e9e9e'
 };
 
+function stationSortKey(code) {
+    const m = (code || '').trim().match(/^([A-Za-z]+)(\d+)$/);
+    return m ? [m[1].toUpperCase(), parseInt(m[2], 10)] : [code, 0];
+}
+
 function renderCrowdNow(data, lineCode) {
     const container = document.getElementById('crowd-now-content');
     const raw = data?.value ?? data;
     const records = Array.isArray(raw) ? raw : [];
+    records.sort((a, b) => {
+        const [pa, na] = stationSortKey(a.Station);
+        const [pb, nb] = stationSortKey(b.Station);
+        return pa !== pb ? pa.localeCompare(pb) : na - nb;
+    });
 
     if (records.length === 0) {
         container.innerHTML = `
