@@ -789,6 +789,7 @@ a:hover {
   gap: 6px;
   box-shadow: 0 2px 12px var(--glass-shadow);
   transition: transform var(--transition);
+  border-top: 3px solid var(--crowd-color, var(--brand-dark));
 }
 
 .fav-card:hover {
