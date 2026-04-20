@@ -487,6 +487,11 @@ async function renderFavourites() {
 
         const starBtn = createStarBtn(code);
         card.querySelector('.fav-card-header').appendChild(starBtn);
+        card.addEventListener('click', () => {
+            const prefix = (code || '').match(/^([A-Za-z]+)/)?.[1]?.toUpperCase();
+            const favLineInfo = CODE_PREFIX_TO_LINE[prefix];
+            if (favLineInfo) openForecastModal(code, favLineInfo.code);
+        });
         grid.appendChild(card);
     });
 
@@ -814,6 +819,7 @@ function renderCrowdNow(data, lineCode) {
         ${timeStr ? `<div class="crowd-time">${timeStr}</div>` : ''}
       `;
             card.querySelector('.crowd-card-header').appendChild(createStarBtn(rec.Station));
+            card.addEventListener('click', () => openForecastModal(rec.Station, lineCode));
             crowdGrid.appendChild(card);
         });
         if (items.length === 0) {
@@ -909,6 +915,94 @@ function setupAutoRefresh() {
             renderFavourites();
         }
     }, 60000);
+}
+
+// ── Forecast Modal ──
+const forecastModal = document.getElementById('forecast-modal');
+document.getElementById('forecast-modal-close').addEventListener('click', () => {
+    forecastModal.hidden = true;
+});
+forecastModal.addEventListener('click', (e) => {
+    if (e.target === forecastModal) forecastModal.hidden = true;
+});
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !forecastModal.hidden) forecastModal.hidden = true;
+});
+
+async function openForecastModal(stationCode, lineCode) {
+    const titleEl = document.getElementById('forecast-modal-title');
+    const bodyEl = document.getElementById('forecast-modal-body');
+
+    const name = stationName(stationCode) || stationCode;
+    const lineInfo = LINES.find(l => l.code === lineCode) || { label: lineCode, color: '#888', code: lineCode };
+    const allLines = getStationLines(stationCode);
+    const badgesHtml = (allLines.length ? allLines : [lineInfo])
+        .map(l => `<span class="line-badge" style="background:${l.color};font-size:0.7rem">${l.code}</span>`)
+        .join('');
+
+    titleEl.innerHTML = `
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">${badgesHtml}</div>
+        <div>${name} <span style="font-size:0.68rem;color:var(--text-muted);font-family:'Noto Sans',monospace">${stationCode}</span></div>
+    `;
+    bodyEl.innerHTML = `<div class="loading-state" style="padding:30px 0"><div class="spinner"></div><span>Loading forecast…</span></div>`;
+    forecastModal.hidden = false;
+
+    try {
+        const data = await apiFetch(`/api/crowd-forecast?line=${encodeURIComponent(lineCode)}`);
+        const raw = data?.value ?? data;
+        const all = Array.isArray(raw) ? raw : [];
+        const slots = all
+            .filter(r => r.Station === stationCode)
+            .sort((a, b) => new Date(a.StartTime) - new Date(b.StartTime));
+        renderForecastChart(bodyEl, slots);
+    } catch (err) {
+        bodyEl.innerHTML = `<div class="error-state">Unable to load forecast data.</div>`;
+        console.error(err);
+    }
+}
+
+function renderForecastChart(container, slots) {
+    if (slots.length === 0) {
+        container.innerHTML = `<div class="data-note" style="padding:24px">No forecast data available for this station today.</div>`;
+        return;
+    }
+
+    const now = new Date();
+    const startMs = new Date(slots[0].StartTime).getTime();
+    const endMs = new Date(slots[slots.length - 1].EndTime).getTime();
+    const totalMs = endMs - startMs;
+    const nowPct = (now.getTime() - startMs) / totalMs * 100;
+    const isNowInRange = nowPct >= 0 && nowPct <= 100;
+
+    const slotsHtml = slots.map(s => {
+        const lvl = (s.CrowdLevel || 'na').toLowerCase();
+        const t = `${formatTime(s.StartTime)}–${formatTime(s.EndTime)}`;
+        return `<div class="timeline-slot ${lvl}" title="${t}: ${CROWD_LABEL[lvl] || 'N/A'}"></div>`;
+    }).join('');
+
+    const labelsHtml = slots
+        .filter((_, i) => i % 4 === 0)
+        .map(s => {
+            const pct = (new Date(s.StartTime).getTime() - startMs) / totalMs * 100;
+            return `<span style="left:${pct.toFixed(1)}%">${formatTime(s.StartTime)}</span>`;
+        }).join('');
+
+    container.innerHTML = `
+        <p class="forecast-subtitle">Best time to travel today</p>
+        <div class="forecast-timeline">
+            <div class="timeline-track">
+                ${slotsHtml}
+                ${isNowInRange ? `<div class="timeline-now" style="left:${nowPct.toFixed(1)}%"></div>` : ''}
+            </div>
+            <div class="timeline-labels">${labelsHtml}</div>
+        </div>
+        <div class="forecast-legend">
+            <span class="crowd-dot l"></span><span>Low</span>
+            <span class="crowd-dot m"></span><span>Moderate</span>
+            <span class="crowd-dot h"></span><span>High</span>
+            ${isNowInRange ? `<span class="forecast-now-line"></span><span>Now</span>` : ''}
+        </div>
+    `;
 }
 
 // ── PWA Service Worker ──
