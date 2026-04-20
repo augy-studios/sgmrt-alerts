@@ -16,23 +16,36 @@ export default async function handler(req, res) {
     }
 
     try {
-        const response = await fetch(
-            `https://datamall2.mytransport.sg/ltaodataservice/PCDForecast?TrainLine=${encodeURIComponent(line)}`, {
+        // PCDForecast returns up to 500 records per page; a full line can have
+        // 30+ stations × 40 half-hour slots ≈ 1200+ records, so we paginate.
+        const allRecords = [];
+        let skip = 0;
+        const PAGE_SIZE = 500;
+
+        while (true) {
+            const url = `https://datamall2.mytransport.sg/ltaodataservice/PCDForecast?TrainLine=${encodeURIComponent(line)}&$skip=${skip}`;
+            const response = await fetch(url, {
                 headers: {
                     AccountKey: apiKey,
                     Accept: 'application/json',
                 },
-            }
-        );
+            });
 
-        if (!response.ok) {
-            throw new Error(`LTA API error: ${response.status}`);
+            if (!response.ok) {
+                throw new Error(`LTA API error: ${response.status}`);
+            }
+
+            const data = await response.json();
+            const page = Array.isArray(data?.value) ? data.value : (Array.isArray(data) ? data : []);
+            allRecords.push(...page);
+
+            if (page.length < PAGE_SIZE) break;
+            skip += PAGE_SIZE;
         }
 
-        const data = await response.json();
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader('Cache-Control', 's-maxage=1800, stale-while-revalidate=3600');
-        return res.status(200).json(data);
+        return res.status(200).json({ value: allRecords });
     } catch (err) {
         console.error('PCDForecast error:', err);
         return res.status(500).json({ error: err.message });
