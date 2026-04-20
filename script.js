@@ -347,19 +347,24 @@ function saveFavourites(favs) {
     localStorage.setItem(FAV_KEY, JSON.stringify(favs));
 }
 
+function getInterchangeCodes(code) {
+    const name = stationName(code);
+    return name ? (NAME_TO_CODES[name] || [code]) : [code];
+}
+
 function isFavourite(code) {
-    return getFavourites().includes(code);
+    const favs = getFavourites();
+    return getInterchangeCodes(code).some(c => favs.includes(c));
 }
 
 function toggleFavourite(code) {
     let favs = getFavourites();
-    if (favs.includes(code)) {
-        favs = favs.filter(c => c !== code);
-    } else {
-        favs.push(code);
-    }
+    const allCodes = getInterchangeCodes(code);
+    const isCurrentlyFav = allCodes.some(c => favs.includes(c));
+    favs = favs.filter(c => !allCodes.includes(c));
+    if (!isCurrentlyFav) favs.push(code);
     saveFavourites(favs);
-    return favs.includes(code);
+    return !isCurrentlyFav;
 }
 
 function getStationLines(stationCode) {
@@ -416,8 +421,17 @@ async function renderFavourites() {
 
     setLoading('favourites-content', 'Loading crowd data…');
 
+    // Deduplicate by station name (handles legacy data with multiple interchange codes stored)
+    const seenNames = new Set();
+    const dedupedFavs = favs.filter(code => {
+        const name = stationName(code) || code;
+        if (seenNames.has(name)) return false;
+        seenNames.add(name);
+        return true;
+    });
+
     const lineCodeSet = new Set();
-    favs.forEach(code => {
+    dedupedFavs.forEach(code => {
         const prefix = (code || '').match(/^([A-Za-z]+)/)?.[1]?.toUpperCase();
         const lineInfo = CODE_PREFIX_TO_LINE[prefix];
         if (lineInfo) lineCodeSet.add(lineInfo.code);
@@ -439,7 +453,7 @@ async function renderFavourites() {
     const grid = document.createElement('div');
     grid.className = 'fav-grid';
 
-    favs.forEach(code => {
+    dedupedFavs.forEach(code => {
         const name = stationName(code);
         const lines = getStationLines(code);
         const card = document.createElement('div');
