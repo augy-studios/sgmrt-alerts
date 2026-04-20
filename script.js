@@ -456,6 +456,7 @@ async function renderFavourites() {
     dedupedFavs.forEach(code => {
         const name = stationName(code);
         const lines = getStationLines(code);
+        const allCodes = name ? (NAME_TO_CODES[name] || [code]) : [code];
         const card = document.createElement('div');
         card.className = 'fav-card';
 
@@ -476,7 +477,7 @@ async function renderFavourites() {
         <div class="fav-lines">${badgesHtml}</div>
       </div>
       <div class="fav-station-name">${name || code}</div>
-      ${name ? `<div class="fav-station-code">${code}</div>` : ''}
+      ${name ? `<div class="fav-station-code">${allCodes.join(' / ')}</div>` : ''}
       <span class="crowd-level-pill ${lvl}">
         <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3.5" fill="currentColor"/></svg>
         ${CROWD_LABEL[lvl] || 'N/A'}
