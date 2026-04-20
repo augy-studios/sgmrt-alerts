@@ -208,6 +208,30 @@ const THEMES = [
     'classic', 'rose', 'lavender', 'butter', 'lilac', 'sky', 'white'
 ];
 
+// Station code prefix → line info (for interchange detection)
+const CODE_PREFIX_TO_LINE = {
+    EW: { code: 'EWL', label: 'EW Line', color: '#009645' },
+    CG: { code: 'CGL', label: 'Changi Ext', color: '#009645' },
+    NS: { code: 'NSL', label: 'NS Line', color: '#d42e12' },
+    NE: { code: 'NEL', label: 'NE Line', color: '#9900aa' },
+    CC: { code: 'CCL', label: 'CC Line', color: '#fa9e0d' },
+    CE: { code: 'CEL', label: 'Circle Ext', color: '#fa9e0d' },
+    DT: { code: 'DTL', label: 'DT Line', color: '#005ec4' },
+    TE: { code: 'TEL', label: 'TE Line', color: '#9d5b25' },
+    BP: { code: 'BPL', label: 'BP LRT', color: '#718573' },
+    SE: { code: 'SLRT', label: 'SK LRT', color: '#718573' },
+    SW: { code: 'SLRT', label: 'SK LRT', color: '#718573' },
+    PE: { code: 'PLRT', label: 'PG LRT', color: '#718573' },
+    PW: { code: 'PLRT', label: 'PG LRT', color: '#718573' },
+};
+
+// Build station name → [codes] map for interchange detection
+const NAME_TO_CODES = {};
+Object.entries(STATION_NAMES).forEach(([code, name]) => {
+    if (!NAME_TO_CODES[name]) NAME_TO_CODES[name] = [];
+    NAME_TO_CODES[name].push(code);
+});
+
 // ── State ──
 let selectedCrowdNowLine = null;
 let currentTab = 'alerts';
@@ -310,6 +334,114 @@ function buildLineSelectors() {
             selectedCrowdNowLine = LINES[0].code;
         }
     }
+}
+
+// ── Favourites ──
+const FAV_KEY = 'mrt-favourites';
+
+function getFavourites() {
+    try { return JSON.parse(localStorage.getItem(FAV_KEY)) || []; } catch { return []; }
+}
+
+function saveFavourites(favs) {
+    localStorage.setItem(FAV_KEY, JSON.stringify(favs));
+}
+
+function isFavourite(code) {
+    return getFavourites().includes(code);
+}
+
+function toggleFavourite(code) {
+    let favs = getFavourites();
+    if (favs.includes(code)) {
+        favs = favs.filter(c => c !== code);
+    } else {
+        favs.push(code);
+    }
+    saveFavourites(favs);
+    return favs.includes(code);
+}
+
+function getStationLines(stationCode) {
+    const name = stationName(stationCode);
+    const allCodes = name ? (NAME_TO_CODES[name] || [stationCode]) : [stationCode];
+    const seen = new Set();
+    const lines = [];
+    allCodes.forEach(c => {
+        const prefix = (c || '').match(/^([A-Za-z]+)/)?.[1]?.toUpperCase();
+        const lineInfo = CODE_PREFIX_TO_LINE[prefix];
+        if (lineInfo && !seen.has(lineInfo.code)) {
+            seen.add(lineInfo.code);
+            lines.push(lineInfo);
+        }
+    });
+    return lines;
+}
+
+function createStarBtn(code) {
+    const fav = isFavourite(code);
+    const btn = document.createElement('button');
+    btn.className = 'star-btn' + (fav ? ' active' : '');
+    btn.dataset.code = code;
+    btn.setAttribute('aria-label', fav ? 'Remove from favourites' : 'Add to favourites');
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="${fav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const nowFav = toggleFavourite(code);
+        btn.classList.toggle('active', nowFav);
+        btn.querySelector('svg').setAttribute('fill', nowFav ? 'currentColor' : 'none');
+        btn.setAttribute('aria-label', nowFav ? 'Remove from favourites' : 'Add to favourites');
+        if (currentTab === 'favourites') renderFavourites();
+    });
+    return btn;
+}
+
+function renderFavourites() {
+    const container = document.getElementById('favourites-content');
+    const favs = getFavourites();
+
+    if (favs.length === 0) {
+        container.innerHTML = `
+      <div class="all-clear">
+        <span class="all-clear-icon">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.35">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+        </span>
+        <h3 style="color:var(--text-muted)">No Favourites Yet</h3>
+        <p>Star stations from the Crowd Now tab to save them here.</p>
+      </div>`;
+        return;
+    }
+
+    container.innerHTML = '';
+    const grid = document.createElement('div');
+    grid.className = 'fav-grid';
+
+    favs.forEach(code => {
+        const name = stationName(code);
+        const lines = getStationLines(code);
+        const card = document.createElement('div');
+        card.className = 'fav-card';
+
+        const badgesHtml = lines.map(l =>
+            `<span class="line-badge" style="background:${l.color};font-size:0.65rem;padding:1px 7px">${l.code}</span>`
+        ).join('');
+
+        card.innerHTML = `
+      <div class="fav-card-header">
+        <div class="fav-lines">${badgesHtml}</div>
+      </div>
+      <div class="fav-station-name">${name || code}</div>
+      ${name ? `<div class="fav-station-code">${code}</div>` : ''}
+    `;
+
+        const starBtn = createStarBtn(code);
+        card.querySelector('.fav-card-header').appendChild(starBtn);
+        grid.appendChild(card);
+    });
+
+    container.appendChild(grid);
 }
 
 // ── Fetch Helpers ──
@@ -623,13 +755,16 @@ function renderCrowdNow(data, lineCode) {
                 '';
             const crowdName = stationName(rec.Station);
             card.innerHTML = `
-        <div class="crowd-station">${crowdName || rec.Station}${crowdName ? `<div class="crowd-station-code">${rec.Station}</div>` : ''}</div>
+        <div class="crowd-card-header">
+          <div class="crowd-station">${crowdName || rec.Station}${crowdName ? `<div class="crowd-station-code">${rec.Station}</div>` : ''}</div>
+        </div>
         <span class="crowd-level-pill ${lvl}">
           <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3.5" fill="currentColor"/></svg>
           ${CROWD_LABEL[lvl] || 'N/A'}
         </span>
         ${timeStr ? `<div class="crowd-time">${timeStr}</div>` : ''}
       `;
+            card.querySelector('.crowd-card-header').appendChild(createStarBtn(rec.Station));
             crowdGrid.appendChild(card);
         });
         if (items.length === 0) {
@@ -699,6 +834,9 @@ function loadCurrentTab() {
             break;
         case 'crowd-now':
             if (selectedCrowdNowLine) fetchCrowdNow(selectedCrowdNowLine);
+            break;
+        case 'favourites':
+            renderFavourites();
             break;
     }
 }

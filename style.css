@@ -739,6 +739,89 @@ a:hover {
   color: var(--text-muted);
 }
 
+.crowd-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+/* ── Star Button ── */
+.star-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: color var(--transition), transform var(--transition);
+  flex-shrink: 0;
+}
+
+.star-btn:hover {
+  color: #f59e0b;
+  transform: scale(1.2);
+}
+
+.star-btn.active {
+  color: #f59e0b;
+}
+
+/* ── Favourites Grid ── */
+.fav-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.fav-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: 0 2px 12px var(--glass-shadow);
+  transition: transform var(--transition);
+}
+
+.fav-card:hover {
+  transform: translateY(-2px);
+}
+
+.fav-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.fav-lines {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.fav-station-name {
+  font-family: 'Jua', sans-serif;
+  font-size: 1rem;
+  color: var(--text-primary);
+  margin-top: 2px;
+}
+
+.fav-station-code {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-family: 'Noto Sans', monospace;
+  letter-spacing: 0.02em;
+}
+
 /* ── Forecast Table ── */
 .forecast-wrap {
   overflow-x: auto;
@@ -995,6 +1078,10 @@ a:hover {
 
   .lift-grid {
     grid-template-columns: 1fr;
+  }
+
+  .fav-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   }
 
   .theme-grid {
