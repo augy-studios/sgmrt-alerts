@@ -396,7 +396,7 @@ function createStarBtn(code) {
     return btn;
 }
 
-function renderFavourites() {
+async function renderFavourites() {
     const container = document.getElementById('favourites-content');
     const favs = getFavourites();
 
@@ -414,6 +414,27 @@ function renderFavourites() {
         return;
     }
 
+    setLoading('favourites-content', 'Loading crowd data…');
+
+    const lineCodeSet = new Set();
+    favs.forEach(code => {
+        const prefix = (code || '').match(/^([A-Za-z]+)/)?.[1]?.toUpperCase();
+        const lineInfo = CODE_PREFIX_TO_LINE[prefix];
+        if (lineInfo) lineCodeSet.add(lineInfo.code);
+    });
+
+    const crowdByStation = {};
+    await Promise.all([...lineCodeSet].map(async lineCode => {
+        try {
+            const data = await apiFetch(`/api/crowd-realtime?line=${encodeURIComponent(lineCode)}`);
+            const raw = data?.value ?? data;
+            const records = Array.isArray(raw) ? raw : [];
+            records.forEach(rec => { crowdByStation[rec.Station] = rec; });
+        } catch (err) {
+            console.error(`Failed to fetch crowd data for ${lineCode}:`, err);
+        }
+    }));
+
     container.innerHTML = '';
     const grid = document.createElement('div');
     grid.className = 'fav-grid';
@@ -423,6 +444,14 @@ function renderFavourites() {
         const lines = getStationLines(code);
         const card = document.createElement('div');
         card.className = 'fav-card';
+
+        const rec = crowdByStation[code];
+        const lvl = rec ? (rec.CrowdLevel || 'na').toLowerCase() : 'na';
+        const crowdColor = CROWD_COLOR[lvl] || CROWD_COLOR.na;
+        card.style.setProperty('--crowd-color', crowdColor);
+
+        const timeStr = rec?.StartTime ?
+            formatTime(rec.StartTime) + '–' + formatTime(rec.EndTime) : '';
 
         const badgesHtml = lines.map(l =>
             `<span class="line-badge" style="background:${l.color};font-size:0.65rem;padding:1px 7px">${l.code}</span>`
@@ -434,6 +463,11 @@ function renderFavourites() {
       </div>
       <div class="fav-station-name">${name || code}</div>
       ${name ? `<div class="fav-station-code">${code}</div>` : ''}
+      <span class="crowd-level-pill ${lvl}">
+        <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3.5" fill="currentColor"/></svg>
+        ${CROWD_LABEL[lvl] || 'N/A'}
+      </span>
+      ${timeStr ? `<div class="crowd-time">${timeStr}</div>` : ''}
     `;
 
         const starBtn = createStarBtn(code);
@@ -856,6 +890,8 @@ function setupAutoRefresh() {
             loadCurrentTab();
         } else if (currentTab === 'crowd-now' && selectedCrowdNowLine) {
             fetchCrowdNow(selectedCrowdNowLine);
+        } else if (currentTab === 'favourites') {
+            renderFavourites();
         }
     }, 60000);
 }
