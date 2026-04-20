@@ -1131,3 +1131,109 @@ a:hover {
 .filter-input::placeholder {
   color: var(--text-muted);
 }
+
+/* ── Forecast Modal ── */
+.forecast-modal-box {
+  max-width: 560px;
+}
+
+.forecast-modal-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 1.05rem;
+  color: var(--text-primary);
+}
+
+.forecast-modal-body {
+  min-height: 100px;
+}
+
+.forecast-subtitle {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+/* ── Timeline Chart ── */
+.forecast-timeline {
+  margin: 8px 0 20px;
+}
+
+.timeline-track {
+  position: relative;
+  display: flex;
+  height: 36px;
+  border-radius: 10px;
+  overflow: hidden;
+  gap: 1px;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.timeline-slot {
+  flex: 1;
+  min-width: 1px;
+}
+
+.timeline-slot.l { background: var(--crowd-l); }
+.timeline-slot.m { background: var(--crowd-m); }
+.timeline-slot.h { background: var(--crowd-h); }
+.timeline-slot.na { background: rgba(158, 158, 158, 0.18); }
+
+.timeline-now {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  background: var(--text-primary);
+  border-radius: 2px;
+  transform: translateX(-50%);
+  z-index: 2;
+  opacity: 0.7;
+}
+
+.timeline-labels {
+  position: relative;
+  height: 18px;
+  margin-top: 5px;
+}
+
+.timeline-labels span {
+  position: absolute;
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.forecast-legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.forecast-legend .crowd-dot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+}
+
+.forecast-now-line {
+  display: inline-block;
+  width: 2px;
+  height: 10px;
+  background: var(--text-primary);
+  vertical-align: middle;
+  border-radius: 1px;
+  opacity: 0.7;
+}
+
+/* Make station cards feel clickable */
+.crowd-card,
+.fav-card {
+  cursor: pointer;
+}
