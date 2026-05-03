@@ -565,8 +565,8 @@ function renderAlerts(data) {
     const raw = data?.value ?? data;
     const alerts = Array.isArray(raw) ? raw : [];
 
-    // Status 1 = normal/minor delays, Status 2 = disrupted
-    const disruptions = alerts.filter(a => a.Status === 2);
+    // Status 1 = normal, Status 2 = disrupted. Use Number() to guard against string coercion from the API.
+    const disruptions = alerts.filter(a => Number(a.Status) > 1);
 
     if (alerts.length === 0 || disruptions.length === 0) {
         showStatus('ok', 'All train services are operating normally');
@@ -589,9 +589,9 @@ function renderAlerts(data) {
     showStatus('warn', `${disruptedCount} line${disruptedCount > 1 ? 's' : ''} with disruption${disruptedCount > 1 ? 's' : ''}`);
 
     container.innerHTML = '';
-    alerts.forEach(alert => {
+    disruptions.forEach(alert => {
         const line = getLineInfo(alert.Line);
-        const isDisrupted = alert.Status === 2;
+        const isDisrupted = Number(alert.Status) > 1;
         const stations = alert.Stations ? alert.Stations.split(',') : [];
         const freeBus = alert.FreePublicBus ? alert.FreePublicBus.split(',') : [];
         const shuttle = alert.FreeMRTShuttle ? alert.FreeMRTShuttle.split(',') : [];
