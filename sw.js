@@ -1,11 +1,15 @@
-const CACHE = "sgma-offline-v1";
+const CACHE = "sgma-v2";
 
 const ASSETS = [
   "/",
   "/index.html",
+  "/404.html",
   "/style.css",
-  "/app.js",
+  "/404.css",
+  "/script.js",
   "/SGMA-main.png",
+  "/SGMA-192.png",
+  "/SGMA-512.png",
   "/favicon.ico",
   "/manifest.json"
 ];

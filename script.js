@@ -1,5 +1,9 @@
 'use strict';
 
+import { initGuestKey, signedFetch } from '/lib/uwu-request-signing.js';
+
+const APP_ID = 'sg-mrt-alerts';
+
 // ── Station Code → Name Map ──
 const STATION_NAMES = {
     // East West Line
@@ -500,7 +504,7 @@ async function renderFavourites() {
 
 // ── Fetch Helpers ──
 async function apiFetch(path) {
-    const res = await fetch(path);
+    const res = await signedFetch(path);
     if (!res.ok) throw new Error(`API error ${res.status}`);
     return res.json();
 }
@@ -1011,6 +1015,15 @@ if ('serviceWorker' in navigator) {
 }
 
 // ── Init ──
-buildLineSelectors();
-fetchAlerts();
-setupAutoRefresh();
+// No login system on this site — every visitor is anonymous, so a guest
+// signing key must be in place before any signedFetch() call runs.
+(async () => {
+    buildLineSelectors();
+    try {
+        await initGuestKey(APP_ID);
+    } catch (err) {
+        console.error('Failed to obtain guest signing key:', err);
+    }
+    fetchAlerts();
+    setupAutoRefresh();
+})();
