@@ -41,15 +41,14 @@ const STATION_NAMES = {
     CC7:'Mountbatten', CC8:'Dakota', CC9:'Paya Lebar',
     CC10:'MacPherson', CC11:'Tai Seng', CC12:'Bartley',
     CC13:'Serangoon', CC14:'Lorong Chuan', CC15:'Bishan',
-    CC16:'Marymount', CC17:'Caldecott', CC19:'Botanic Gardens',
+    CC16:'Marymount', CC17:'Caldecott', CC18:'Bukit Brown', CC19:'Botanic Gardens',
     CC20:'Farrer Road', CC21:'Holland Village', CC22:'Buona Vista',
     CC23:'one-north', CC24:'Kent Ridge', CC25:'Haw Par Villa',
     CC26:'Pasir Panjang', CC27:'Labrador Park', CC28:'Telok Blangah',
-    CC29:'HarbourFront',
-    // Circle Line Extension
-    CE1:'Bayfront', CE2:'Marina Bay',
+    CC29:'HarbourFront', CC30:'Keppel', CC31:'Cantonment', CC32:'Prince Edward Road',
+    CC33:'Marina Bay', CC34:'Bayfront',
     // Downtown Line
-    DT1:'Bukit Panjang', DT2:'Cashew', DT3:'Hillview',
+    DT1:'Bukit Panjang', DT2:'Cashew', DT3:'Hillview', DT4:'Hume',
     DT5:'Beauty World', DT6:'King Albert Park', DT7:'Sixth Avenue',
     DT8:'Tan Kah Kee', DT9:'Botanic Gardens', DT10:'Stevens',
     DT11:'Newton', DT12:'Little India', DT13:'Rochor',
@@ -60,6 +59,7 @@ const STATION_NAMES = {
     DT26:'MacPherson', DT27:'Ubi', DT28:'Kaki Bukit',
     DT29:'Bedok North', DT30:'Bedok Reservoir', DT31:'Tampines West',
     DT32:'Tampines', DT33:'Tampines East', DT34:'Upper Changi', DT35:'Expo',
+    DT36:'Xilin', DT37:'Sungei Bedok',
     // Thomson-East Coast Line
     TE1:'Woodlands North', TE2:'Woodlands', TE3:'Woodlands South',
     TE4:'Springleaf', TE5:'Lentor', TE6:'Mayflower',
@@ -67,7 +67,8 @@ const STATION_NAMES = {
     TE10:'Mount Pleasant', TE11:'Stevens', TE12:'Napier',
     TE13:'Orchard Boulevard', TE14:'Orchard', TE15:'Great World',
     TE16:'Havelock', TE17:'Outram Park', TE18:'Maxwell',
-    TE19:'Shenton Way', TE20:'Marina Bay', TE22:'Gardens by the Bay',
+    TE19:'Shenton Way', TE20:'Marina Bay', TE21:'Marina South',
+    TE22:'Gardens by the Bay', TE22A:'Founders\' Memorial',
     TE23:'Tanjong Rhu', TE24:'Katong Park', TE25:'Tanjong Katong',
     TE26:'Marine Parade', TE27:'Marine Terrace', TE28:'Siglap',
     TE29:'Bayshore', TE30:'Bedok South', TE31:'Sungei Bedok',
@@ -113,12 +114,6 @@ const LINES = [{
     {
         code: 'CCL',
         label: 'CC Line',
-        color: '#fa9e0d',
-        group: 'MRT'
-    },
-    {
-        code: 'CEL',
-        label: 'Circle Ext',
         color: '#fa9e0d',
         group: 'MRT'
     },
@@ -219,7 +214,6 @@ const CODE_PREFIX_TO_LINE = {
     NS: { code: 'NSL', label: 'NS Line', color: '#d42e12' },
     NE: { code: 'NEL', label: 'NE Line', color: '#9900aa' },
     CC: { code: 'CCL', label: 'CC Line', color: '#fa9e0d' },
-    CE: { code: 'CEL', label: 'Circle Ext', color: '#fa9e0d' },
     DT: { code: 'DTL', label: 'DT Line', color: '#005ec4' },
     TE: { code: 'TEL', label: 'TE Line', color: '#9d5b25' },
     BP: { code: 'BPL', label: 'BP LRT', color: '#718573' },

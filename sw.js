@@ -1,4 +1,4 @@
-const CACHE = "sgma-v2";
+const CACHE = "sgma-v3";
 
 const ASSETS = [
   "/",
