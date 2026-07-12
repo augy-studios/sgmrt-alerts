@@ -1,15 +1,8 @@
-import { verifySignedRequest } from '../lib/uwu-request-signing-server.js';
-
 export default async function handler(req, res) {
     if (req.method === 'OPTIONS') {
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
         return res.status(200).end();
-    }
-
-    const verification = await verifySignedRequest(req);
-    if (!verification.valid) {
-        return res.status(403).json({ error: 'Invalid or missing request signature', reason: verification.reason });
     }
 
     const apiKey = process.env.LTA_ACCOUNT_KEY;
