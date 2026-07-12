@@ -947,7 +947,12 @@ async function openForecastModal(stationCode, lineCode) {
         const all = Array.isArray(raw) ? raw : [];
         const slots = all
             .filter(r => r.Station === stationCode)
-            .sort((a, b) => new Date(a.StartTime) - new Date(b.StartTime));
+            .sort((a, b) => new Date(a.Start) - new Date(b.Start))
+            .map((s, i, arr) => ({
+                ...s,
+                StartTime: s.Start,
+                EndTime: arr[i + 1] ? arr[i + 1].Start : new Date(new Date(s.Start).getTime() + 30 * 60000).toISOString(),
+            }));
         renderForecastChart(bodyEl, slots);
     } catch (err) {
         bodyEl.innerHTML = `<div class="error-state">Unable to load forecast data.</div>`;
