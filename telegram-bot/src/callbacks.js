@@ -16,7 +16,7 @@ async function handleFavToggle(ctx, code) {
     try {
         await ctx.editMessageReplyMarkup(stationKeyboard(code, ctx.from.id).reply_markup);
     } catch {
-        // message may be unchanged / too old to edit — safe to ignore
+        // message may be unchanged / too old to edit - safe to ignore
     }
 }
 
@@ -34,7 +34,7 @@ async function handleForecast(ctx, code) {
             await ctx.reply(`No forecast data available for ${stationName(code) || code} today.`);
             return;
         }
-        const title = `${stationName(code) || code} (${code}) — Crowd Forecast`;
+        const title = `${stationName(code) || code} (${code}) - Crowd Forecast`;
         const buffer = await renderForecastChart(title, slots);
         await ctx.replyWithPhoto({ source: buffer }, { caption: `📊 ${title}\nLow / Moderate / High crowd level by time slot.` });
     } catch (err) {
@@ -76,7 +76,7 @@ async function handleRefreshStatus(ctx) {
         await ctx.answerCbQuery('Refreshed');
         await ctx.editMessageText(text, { parse_mode: 'MarkdownV2', ...statusKeyboard() });
     } catch (err) {
-        // Telegram errors when the new text is identical to the old one — not a real failure.
+        // Telegram errors when the new text is identical to the old one - not a real failure.
         if (err?.response?.description?.includes('message is not modified')) {
             await ctx.answerCbQuery('Already up to date');
             return;

@@ -25,7 +25,7 @@ function register(bot) {
         }
 
         const lines = matches.map((code) => `• ${esc(stationName(code))} \\(${esc(code)}\\)`).join('\n');
-        await ctx.reply(`Multiple stations match "${esc(text.trim())}" — pick one:\n\n${lines}`, {
+        await ctx.reply(`Multiple stations match "${esc(text.trim())}" - pick one:\n\n${lines}`, {
             parse_mode: 'MarkdownV2',
             ...candidateListKeyboard(matches),
         });

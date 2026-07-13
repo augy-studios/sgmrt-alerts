@@ -52,7 +52,7 @@ async function pollAlerts(bot) {
     const prev = db.prepare('SELECT * FROM alert_state WHERE id = 1').get();
 
     if (!prev) {
-        // First run after a fresh install — record the baseline without
+        // First run after a fresh install - record the baseline without
         // notifying, otherwise every restart would re-announce whatever
         // the current status happens to be.
         db.prepare('INSERT INTO alert_state (id, status, segments_hash, notices_hash, updated_at) VALUES (1, ?, ?, ?, ?)')

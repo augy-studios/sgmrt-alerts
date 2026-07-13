@@ -14,7 +14,7 @@ const scheduler = require('./scheduler');
 
 const bot = new Telegraf(config.BOT_TOKEN);
 
-// The bot's command list is intentionally NOT set here via setMyCommands —
+// The bot's command list is intentionally NOT set here via setMyCommands -
 // it's managed manually through @BotFather instead. See SETUP.md.
 
 registerStart(bot);

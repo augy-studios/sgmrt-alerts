@@ -1,4 +1,4 @@
-# Setup — Debian 13 VPS (tmux)
+# Setup - Debian 13 VPS (tmux)
 
 Step-by-step deployment for running this bot persistently on a Debian 13 VPS
 inside a `tmux` session.
@@ -8,9 +8,9 @@ inside a `tmux` session.
 1. On Telegram, message [@BotFather](https://t.me/BotFather).
 2. `/newbot` → follow the prompts → copy the bot token it gives you.
 3. Optional but recommended, still via BotFather:
-   - `/setdescription` — shown on the bot's profile
-   - `/setabouttext` — shown when someone shares the bot
-   - `/setuserpic` — bot avatar
+   - `/setdescription` - shown on the bot's profile
+   - `/setabouttext` - shown when someone shares the bot
+   - `/setuserpic` - bot avatar
    - `/setprivacy` → **Disable** if you ever want the bot to read group
      messages that aren't commands; leave **Enabled** (default) for
      DM-only use, which is all this bot needs.
@@ -31,7 +31,7 @@ inside a `tmux` session.
 Request one at
 https://datamall.lta.gov.sg/content/datamall/en/request-for-api.html if you
 don't already have one. This is the same key used by `main-site`'s Vercel API
-routes (`LTA_ACCOUNT_KEY`) — you can reuse it here.
+routes (`LTA_ACCOUNT_KEY`) - you can reuse it here.
 
 ## 3. Install Node.js on the VPS
 
@@ -67,14 +67,14 @@ nano .env   # or vim/your editor of choice
 ```
 
 Fill in:
-- `TELEGRAM_BOT_TOKEN` — from step 1
-- `LTA_ACCOUNT_KEY` — from step 2
-- `WEBAPP_URL` — the public URL of the main-site PWA (leave blank to omit
+- `TELEGRAM_BOT_TOKEN` - from step 1
+- `LTA_ACCOUNT_KEY` - from step 2
+- `WEBAPP_URL` - the public URL of the main-site PWA (leave blank to omit
   the "Open Web App" button on `/start`)
-- `DONATE_URL` — defaults to the same Stripe donation link used by main-site;
+- `DONATE_URL` - defaults to the same Stripe donation link used by main-site;
   change or leave as-is
-- `DB_PATH` — defaults to `./data/bot.sqlite3`, fine to leave alone
-- `ALERT_POLL_INTERVAL_SECONDS` — how often (seconds) the bot checks LTA for
+- `DB_PATH` - defaults to `./data/bot.sqlite3`, fine to leave alone
+- `ALERT_POLL_INTERVAL_SECONDS` - how often (seconds) the bot checks LTA for
   service status changes to send to subscribers; defaults to 60
 
 ## 6. Run it in tmux
@@ -85,7 +85,7 @@ cd ~/sgmrt-alerts/telegram-bot
 npm start
 ```
 
-Detach with `Ctrl+B` then `D` — the bot keeps running. Reattach later with:
+Detach with `Ctrl+B` then `D` - the bot keeps running. Reattach later with:
 
 ```bash
 tmux attach -t sgmrt-bot
@@ -104,7 +104,7 @@ npm start
 ```
 
 Favourites, subscriptions, and inline buttons all persist in
-`data/bot.sqlite3` across restarts — no data is lost.
+`data/bot.sqlite3` across restarts - no data is lost.
 
 ## 7. (Optional) Survive VPS reboots with systemd
 
@@ -142,16 +142,16 @@ processes polling Telegram at once (Telegram will reject the second
 
 ## Troubleshooting
 
-- **`Missing required environment variable`** on startup — `.env` wasn't
+- **`Missing required environment variable`** on startup - `.env` wasn't
   filled in or isn't being read; confirm you're running `npm start` from
   inside `telegram-bot/` where `.env` lives.
-- **`better-sqlite3` fails to install** — run
+- **`better-sqlite3` fails to install** - run
   `sudo apt-get install -y build-essential python3` and re-run
   `npm install` so it can compile from source.
-- **No status updates after /sub** — check the process is still
+- **No status updates after /sub** - check the process is still
   running (`tmux attach -t sgmrt-bot` or `journalctl -u sgmrt-bot -f`) and
   that `ALERT_POLL_INTERVAL_SECONDS` isn't set absurdly high.
-- **Forecast chart fails to send** — QuickChart's public endpoint
+- **Forecast chart fails to send** - QuickChart's public endpoint
   (quickchart.io) has generous free-tier rate limits but isn't unlimited; if
   you hit limits, self-host QuickChart (see their
   [Docker instructions](https://quickchart.io/documentation/self-hosting/))
