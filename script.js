@@ -556,13 +556,23 @@ function getLineInfo(code) {
 
 function renderAlerts(data) {
     const container = document.getElementById('alerts-content');
-    const raw = data?.value ?? data;
-    const alerts = Array.isArray(raw) ? raw : [];
-
+    // TrainServiceAlerts returns a single object, not an array: { Status, AffectedSegments: [...], Message: [...] }.
     // Status 1 = normal, Status 2 = disrupted. Use Number() to guard against string coercion from the API.
-    const disruptions = alerts.filter(a => Number(a.Status) > 1);
+    const value = data?.value ?? data ?? {};
+    const overallStatus = Number(value.Status);
+    const disruptions = Array.isArray(value.AffectedSegments) ? value.AffectedSegments : [];
+    const notices = Array.isArray(value.Message) ? value.Message : [];
 
-    if (alerts.length === 0 || disruptions.length === 0) {
+    const noticesHtml = notices.length ? `
+      <div class="card" style="margin-top:12px">
+        <div class="card-title" style="margin-bottom:8px">Service Notices</div>
+        ${notices.map(n => `
+          <div class="card-message">${n.Content}</div>
+          ${n.CreatedDate ? `<div class="data-note">Issued: ${formatDateTime(n.CreatedDate)}</div>` : ''}
+        `).join('<hr style="margin:10px 0;border-color:var(--border-color,#333)">')}
+      </div>` : '';
+
+    if (overallStatus <= 1 && disruptions.length === 0) {
         showStatus('ok', 'All train services are operating normally');
         container.innerHTML = `
       <div class="all-clear">
@@ -574,7 +584,7 @@ function renderAlerts(data) {
         </span>
         <h3>All Clear</h3>
         <p>All MRT and LRT lines are operating normally.<br>No disruptions reported.</p>
-      </div>`;
+      </div>${noticesHtml}`;
         return;
     }
 
@@ -585,7 +595,7 @@ function renderAlerts(data) {
     container.innerHTML = '';
     disruptions.forEach(alert => {
         const line = getLineInfo(alert.Line);
-        const isDisrupted = Number(alert.Status) > 1;
+        const isDisrupted = Number(alert.Status ?? overallStatus) > 1;
         const stations = alert.Stations ? alert.Stations.split(',') : [];
         const freeBus = alert.FreePublicBus ? alert.FreePublicBus.split(',') : [];
         const shuttle = alert.FreeMRTShuttle ? alert.FreeMRTShuttle.split(',') : [];
@@ -635,11 +645,10 @@ function renderAlerts(data) {
         </div>` : ''}
       </div>` : ''}
 
-      ${alert.Message?.Content ? `<div class="card-message">${alert.Message.Content}</div>` : ''}
-      ${alert.Message?.CreatedDate ? `<div class="data-note">Issued: ${formatDateTime(alert.Message.CreatedDate)}</div>` : ''}
     `;
         container.appendChild(card);
     });
+    if (noticesHtml) container.insertAdjacentHTML('beforeend', noticesHtml);
 }
 
 // ── Facilities / Lifts ──
