@@ -944,9 +944,15 @@ async function openForecastModal(stationCode, lineCode) {
     try {
         const data = await apiFetch(`/api/crowd-forecast?line=${encodeURIComponent(lineCode)}`);
         const raw = data?.value ?? data;
-        const all = Array.isArray(raw) ? raw : [];
-        const slots = all
-            .filter(r => r.Station === stationCode)
+        const dateEntries = Array.isArray(raw) ? raw : [];
+        // PCDForecast nests results as Date -> Stations[] -> Interval[] rather
+        // than returning a flat list of {Station, Start, CrowdLevel} records.
+        const intervals = dateEntries
+            .flatMap(d => d.Stations || [])
+            .filter(s => s.Station === stationCode)
+            .flatMap(s => s.Interval || []);
+        const slots = intervals
+            .slice()
             .sort((a, b) => new Date(a.Start) - new Date(b.Start))
             .map((s, i, arr) => ({
                 ...s,
