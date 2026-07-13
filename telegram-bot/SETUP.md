@@ -6,10 +6,25 @@ inside a `tmux` session.
 ## 1. Create the bot with BotFather
 
 1. On Telegram, message [@BotFather](https://t.me/BotFather).
-2. `/newbot` → follow the prompts → copy the bot token it gives you.
+2. `/newbot` → name it **SG MRT Alerts**, username `sgmrtalerts_bot` → copy
+   the bot token it gives you.
 3. Optional but recommended, still via BotFather:
-   - `/setdescription` - shown on the bot's profile
-   - `/setabouttext` - shown when someone shares the bot
+   - `/setdescription` (≤512 chars) — shown on the empty chat screen
+     *before* someone taps Start. Select your bot, then send:
+
+     ```text
+     🚇 Real-time Singapore MRT/LRT service alerts and station crowd levels, powered by LTA DataMall.
+
+     Send a station code or name (e.g. NS1 or Bishan) to check its current crowd level and forecast. Save favourites with /favs, check /status for live disruptions, and /sub to get notified whenever service status changes.
+     ```
+
+   - `/setabouttext` (≤120 chars) — shown on the bot's profile/info page.
+     Select your bot, then send:
+
+     ```text
+     Real-time SG MRT/LRT service alerts & station crowd levels, powered by LTA DataMall.
+     ```
+
    - `/setuserpic` - bot avatar
    - `/setprivacy` → **Disable** if you ever want the bot to read group
      messages that aren't commands; leave **Enabled** (default) for
