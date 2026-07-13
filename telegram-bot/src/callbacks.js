@@ -8,7 +8,9 @@ const { renderForecastChart } = require('./chart');
 const { buildStationView } = require('./stationView');
 const { buildFavsPage } = require('./favs');
 const { stationKeyboard, statusKeyboard } = require('./keyboards');
-const { formatAlerts } = require('./format');
+const { formatAlerts, CROWD_EMOJI, CROWD_LABEL } = require('./format');
+
+const FORECAST_LEGEND = ['l', 'm', 'h'].map((lvl) => `${CROWD_EMOJI[lvl]} ${CROWD_LABEL[lvl]}`).join('   ');
 
 async function handleFavToggle(ctx, code) {
     const nowFav = favourites.toggle(ctx.from.id, code);
@@ -34,9 +36,9 @@ async function handleForecast(ctx, code) {
             await ctx.reply(`No forecast data available for ${stationName(code) || code} today.`);
             return;
         }
-        const title = `${stationName(code) || code} (${code}) - Crowd Forecast`;
+        const title = `${stationName(code) || code} (${code}) — Crowd Forecast`;
         const buffer = await renderForecastChart(title, slots);
-        await ctx.replyWithPhoto({ source: buffer }, { caption: `📊 ${title}\nLow / Moderate / High crowd level by time slot.` });
+        await ctx.replyWithPhoto({ source: buffer }, { caption: `${title}\n${FORECAST_LEGEND}` });
     } catch (err) {
         console.error('forecast callback error:', err);
         await ctx.reply('⚠️ Unable to generate the forecast chart right now. Please try again shortly.');

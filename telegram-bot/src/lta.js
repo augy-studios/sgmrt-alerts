@@ -7,21 +7,53 @@ const HEADERS = { AccountKey: config.LTA_ACCOUNT_KEY, Accept: 'application/json'
 
 // Simple in-process TTL cache. The bot runs as a single long-lived process
 // (tmux), so this avoids hammering LTA DataMall when multiple users query
-// the same line within a short window.
+// the same line within a short window. In-flight promises are shared so
+// concurrent requests for the same key during a cold cache don't each
+// trigger their own LTA fetch.
 const cache = new Map();
+const inFlight = new Map();
 
 async function cached(key, ttlMs, fetcher) {
     const hit = cache.get(key);
     if (hit && hit.expires > Date.now()) return hit.data;
-    const data = await fetcher();
-    cache.set(key, { data, expires: Date.now() + ttlMs });
-    return data;
+
+    let promise = inFlight.get(key);
+    if (!promise) {
+        promise = fetcher()
+            .then((data) => {
+                cache.set(key, { data, expires: Date.now() + ttlMs });
+                return data;
+            })
+            .finally(() => inFlight.delete(key));
+        inFlight.set(key, promise);
+    }
+    return promise;
 }
 
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// LTA's Apigee gateway reports burst/spike rate limiting as a 500 with a
+// ratelimit fault code, not a 429 — so we can't rely on status alone.
+function isRateLimitFault(status, body) {
+    return status === 429 || /ratelimit|spikearrest|quotaviolation/i.test(body || '');
+}
+
+const MAX_RETRIES = 2;
+
 async function ltaGet(path) {
-    const res = await fetch(`${BASE}${path}`, { headers: HEADERS });
-    if (!res.ok) throw new Error(`LTA API error ${res.status} for ${path}`);
-    return res.json();
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+        const res = await fetch(`${BASE}${path}`, { headers: HEADERS });
+        if (res.ok) return res.json();
+
+        const body = await res.text().catch(() => '');
+        if (isRateLimitFault(res.status, body) && attempt < MAX_RETRIES) {
+            await sleep(500 * 2 ** attempt); // 500ms, then 1000ms
+            continue;
+        }
+        throw new Error(`LTA API error ${res.status} for ${path}${body ? ` — ${body}` : ''}`);
+    }
 }
 
 async function fetchTrainAlerts() {
@@ -35,8 +67,11 @@ async function fetchCrowdRealtime(lineCode) {
     });
 }
 
+const FORECAST_TTL_MS = 24 * 60 * 60 * 1000; // a day's forecast doesn't change intraday
+const PAGE_DELAY_MS = 200; // spacing between paginated requests, to stay under LTA's burst rate limit
+
 async function fetchCrowdForecast(lineCode) {
-    return cached(`forecast:${lineCode}`, 30 * 60_000, async () => {
+    return cached(`forecast:${lineCode}`, FORECAST_TTL_MS, async () => {
         const allRecords = [];
         let skip = 0;
         const PAGE_SIZE = 500;
@@ -46,6 +81,7 @@ async function fetchCrowdForecast(lineCode) {
             allRecords.push(...page);
             if (page.length < PAGE_SIZE) break;
             skip += PAGE_SIZE;
+            await sleep(PAGE_DELAY_MS);
         }
         return allRecords; // array of { Date, Stations: [{ Station, Interval: [{Start, CrowdLevel}] }] }
     });
