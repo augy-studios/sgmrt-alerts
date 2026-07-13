@@ -267,6 +267,14 @@ a:hover {
   text-decoration: none;
 }
 
+.telegram-btn {
+  text-decoration: none;
+}
+
+.telegram-btn:hover {
+  color: #26a5e4;
+}
+
 .icon-btn.spinning svg {
   animation: spin 0.8s linear infinite;
 }

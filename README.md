@@ -4,15 +4,18 @@ Real-time Singapore MRT/LRT situational awareness - service alerts, lift
 maintenance, and station crowd levels - sourced from
 [LTA DataMall](https://datamall.lta.gov.sg). Two ways to use it:
 
-- 🌐 **[Web app](main-site/)** - a PWA at
+- 🌐 **[Web app](main-site/)** - live at
   [mrtalerts.uwuapps.org](https://mrtalerts.uwuapps.org), deployed on Vercel
-- 🤖 **[Telegram bot](telegram-bot/)** - DM-based lookup, favourites, and
-  service status push updates, self-hosted on a VPS
+- 🤖 **[Telegram bot](telegram-bot/)** - live at
+  [t.me/sgmrtalerts_bot](https://t.me/sgmrtalerts_bot), DM-based lookup,
+  favourites, and service status push updates, self-hosted on a VPS
 
 Both share the same station data and LTA DataMall endpoints, just packaged
 for different ways of checking in on the trains.
 
 ## Web app
+
+🔗 **[mrtalerts.uwuapps.org](https://mrtalerts.uwuapps.org)**
 
 An installable PWA with train alerts, lift outage tracking, real-time crowd
 levels, and 30-minute crowd forecasts, in 7 themes.
@@ -22,6 +25,8 @@ levels, and 30-minute crowd forecasts, in 7 themes.
 proxy LTA DataMall (with response caching to stay within LTA's rate limits)
 
 ## Telegram bot
+
+🔗 **[t.me/sgmrtalerts_bot](https://t.me/sgmrtalerts_bot)**
 
 Same data, DM-native: send a station code or name to look up its crowd level
 and forecast, save favourites, check `/status` for alerts, and `/sub` to get
