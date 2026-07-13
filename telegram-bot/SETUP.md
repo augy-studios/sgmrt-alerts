@@ -9,7 +9,7 @@ inside a `tmux` session.
 2. `/newbot` → name it **SG MRT Alerts**, username `sgmrtalerts_bot` → copy
    the bot token it gives you.
 3. Optional but recommended, still via BotFather:
-   - `/setdescription` (≤512 chars) — shown on the empty chat screen
+   - `/setdescription` (≤512 chars) - shown on the empty chat screen
      *before* someone taps Start. Select your bot, then send:
 
      ```text
@@ -18,7 +18,7 @@ inside a `tmux` session.
      Send a station code or name (e.g. NS1 or Bishan) to check its current crowd level and forecast. Save favourites with /favs, check /status for live disruptions, and /sub to get notified whenever service status changes.
      ```
 
-   - `/setabouttext` (≤120 chars) — shown on the bot's profile/info page.
+   - `/setabouttext` (≤120 chars) - shown on the bot's profile/info page.
      Select your bot, then send:
 
      ```text

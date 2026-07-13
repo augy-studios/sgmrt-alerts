@@ -42,7 +42,7 @@ function formatStationCrowdMessage(code, lines, realtimeRec) {
 function formatFavouriteLine(code, rec) {
     const lvl = crowdLevelOf(rec);
     const name = stationName(code) || code;
-    return `${CROWD_EMOJI[lvl]} *${esc(name)}* \\(${esc(code)}\\) - ${CROWD_LABEL[lvl]}`;
+    return `${CROWD_EMOJI[lvl]} *${esc(name)}* \\(${esc(code)}\\) \\- ${CROWD_LABEL[lvl]}`;
 }
 
 function formatNotices(notices) {
@@ -70,7 +70,7 @@ function formatAlerts(data) {
     for (const seg of segments) {
         const line = getAlertLineInfo(seg.Line);
         const disrupted = Number(seg.Status ?? status) > 1;
-        lines.push(`*${esc(line.label)}* - ${disrupted ? '🔴 Disrupted' : '🟡 Minor Delay'}`);
+        lines.push(`*${esc(line.label)}* \\- ${disrupted ? '🔴 Disrupted' : '🟡 Minor Delay'}`);
         if (seg.Direction) lines.push(`Direction: ${esc(seg.Direction)}`);
 
         const stations = seg.Stations ? seg.Stations.split(',').map((s) => s.trim()) : [];

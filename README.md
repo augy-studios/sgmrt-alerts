@@ -1,12 +1,12 @@
 # SG MRT Alerts
 
-Real-time Singapore MRT/LRT situational awareness — service alerts, lift
-maintenance, and station crowd levels — sourced from
+Real-time Singapore MRT/LRT situational awareness - service alerts, lift
+maintenance, and station crowd levels - sourced from
 [LTA DataMall](https://datamall.lta.gov.sg). Two ways to use it:
 
-- 🌐 **[Web app](main-site/)** — a PWA at
+- 🌐 **[Web app](main-site/)** - a PWA at
   [mrtalerts.uwuapps.org](https://mrtalerts.uwuapps.org), deployed on Vercel
-- 🤖 **[Telegram bot](telegram-bot/)** — DM-based lookup, favourites, and
+- 🤖 **[Telegram bot](telegram-bot/)** - DM-based lookup, favourites, and
   service status push updates, self-hosted on a VPS
 
 Both share the same station data and LTA DataMall endpoints, just packaged
@@ -37,7 +37,7 @@ All train service alerts, lift maintenance, and crowd data come from
 [LTA DataMall](https://datamall.lta.gov.sg)'s `TrainServiceAlerts`,
 `FacilitiesMaintenance`, `PCDRealTime`, and `PCDForecast` APIs. Both
 sub-projects cache responses (in-memory and/or via CDN headers) to stay well
-under LTA's rate limits — see the API handlers in `main-site/api/` and
+under LTA's rate limits - see the API handlers in `main-site/api/` and
 `telegram-bot/src/lta.js` for specifics.
 
 ## Support

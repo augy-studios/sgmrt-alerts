@@ -9,10 +9,10 @@ const INTRO = [
     '',
     '*What you can do:*',
     '• Send a station code or name \\(e\\.g\\. `NS1` or `Bishan`\\) to check its current crowd level and forecast',
-    '• /status - train service alerts \\& service notices',
-    '• /favs - your favourited stations\' crowd levels',
-    '• /sub - get updated whenever service status changes',
-    '• /unsub - stop those updates',
+    '• /status \\- train service alerts \\& service notices',
+    '• /favs \\- your favourited stations\' crowd levels',
+    '• /sub \\- get updated whenever service status changes',
+    '• /unsub \\- stop those updates',
 ].join('\n');
 
 function register(bot) {

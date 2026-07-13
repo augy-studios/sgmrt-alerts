@@ -15,7 +15,7 @@ function sleep(ms) {
 }
 
 // LTA's Apigee gateway reports burst/spike rate limiting as a 500 with a
-// ratelimit fault code, not a 429 — so we can't rely on status alone.
+// ratelimit fault code, not a 429 - so we can't rely on status alone.
 function isRateLimitFault(status, body) {
     return status === 429 || /ratelimit|spikearrest|quotaviolation/i.test(body || '');
 }
