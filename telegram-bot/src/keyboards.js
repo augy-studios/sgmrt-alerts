@@ -36,7 +36,7 @@ function favsPageKeyboard(pageCodes, page, totalPages) {
     const rows = [];
     for (let i = 0; i < pageCodes.length; i += 2) {
         const row = pageCodes.slice(i, i + 2).map((code) =>
-            callbackButton(`🔮 ${stationName(code) || code}`, 'forecast', code)
+            callbackButton(`📊 ${stationName(code) || code}`, 'forecast', code)
         );
         rows.push(row);
     }
