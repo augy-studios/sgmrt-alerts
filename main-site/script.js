@@ -1,5 +1,15 @@
 'use strict';
 
+import {
+    COLOR_THEMES,
+    applyColorTheme,
+    applyMode,
+    getStoredColorTheme,
+    getStoredMode,
+    initTheme
+} from './js/theme.js';
+import { hydrateIcons, openModal, closeModal } from './js/ui.js';
+
 // ── Station Code → Name Map ──
 const STATION_NAMES = {
     // East West Line
@@ -199,10 +209,6 @@ const ALERT_LINES = [{
     },
 ];
 
-const THEMES = [
-    'classic', 'rose', 'lavender', 'butter', 'lilac', 'sky', 'white'
-];
-
 // Station code prefix → line info (for interchange detection)
 const CODE_PREFIX_TO_LINE = {
     EW: { code: 'EWL', label: 'EW Line', color: '#009645' },
@@ -232,10 +238,6 @@ let currentTab = 'alerts';
 let refreshTimer = null;
 
 // ── DOM Refs ──
-const body = document.body;
-const themeBtn = document.getElementById('theme-btn');
-const themeModal = document.getElementById('theme-modal');
-const modalCloseBtn = document.getElementById('modal-close-btn');
 const refreshBtn = document.getElementById('refresh-btn');
 const lastUpdatedEl = document.getElementById('last-updated');
 const statusBanner = document.getElementById('status-banner');
@@ -244,45 +246,64 @@ const statusIcon = document.getElementById('status-icon');
 const statusText = document.getElementById('status-text');
 
 // ── Theme ──
-function applyTheme(theme) {
-    body.setAttribute('data-theme', theme);
-    localStorage.setItem('mrt-theme', theme);
-    document.querySelectorAll('.theme-swatch').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.theme === theme);
+function buildThemeModal() {
+    const grid = document.getElementById('swatchGrid');
+    grid.innerHTML = COLOR_THEMES.map(
+        (t) => `
+      <button class="swatch" data-theme-id="${t.id}" style="--swatch-color:${t.hex}" type="button" aria-label="${t.label}">
+        <span class="swatch-dot"></span>
+        <span class="swatch-label">${t.label}</span>
+      </button>`
+    ).join('');
+
+    syncThemeModalState();
+
+    grid.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-theme-id]');
+        if (!btn) return;
+        applyColorTheme(btn.dataset.themeId);
+        syncThemeModalState();
     });
-    const metaTheme = document.querySelector('meta[name="theme-color"]');
-    const themeColors = {
-        classic: '#ccffcc',
-        rose: '#ffcccc',
-        lavender: '#ccccff',
-        butter: '#ffffcc',
-        lilac: '#ffccff',
-        sky: '#ccffff',
-        white: '#f0f0f0'
-    };
-    if (metaTheme) metaTheme.content = themeColors[theme] || '#ccffcc';
+
+    document.getElementById('modeToggle').addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-mode]');
+        if (!btn) return;
+        applyMode(btn.dataset.mode);
+        syncThemeModalState();
+    });
 }
 
-document.querySelectorAll('.theme-swatch').forEach(btn => {
-    btn.addEventListener('click', () => {
-        applyTheme(btn.dataset.theme);
-        themeModal.hidden = true;
+function syncThemeModalState() {
+    const activeTheme = getStoredColorTheme();
+    const activeMode = getStoredMode();
+    document.querySelectorAll('#swatchGrid .swatch').forEach((el) => {
+        el.classList.toggle('active', el.dataset.themeId === activeTheme);
     });
-});
+    document.querySelectorAll('#modeToggle .mode-btn').forEach((el) => {
+        const active = el.dataset.mode === activeMode;
+        el.classList.toggle('active', active);
+        el.setAttribute('aria-pressed', String(active));
+    });
+    updateThemeButtonIcon();
+}
 
-themeBtn.addEventListener('click', () => {
-    themeModal.hidden = false;
-});
-modalCloseBtn.addEventListener('click', () => {
-    themeModal.hidden = true;
-});
-themeModal.addEventListener('click', (e) => {
-    if (e.target === themeModal) themeModal.hidden = true;
-});
+function updateThemeButtonIcon() {
+    const span = document.querySelector('#themeBtn [data-icon]');
+    span.setAttribute('data-icon', getStoredMode() === 'dark' ? 'moon' : 'sun');
+    hydrateIcons(document.getElementById('themeBtn'));
+}
 
-// Load saved theme
-const savedTheme = localStorage.getItem('mrt-theme') || 'classic';
-applyTheme(savedTheme);
+function wireModals() {
+    document.querySelectorAll('[data-close-modal]').forEach((btn) => {
+        btn.addEventListener('click', () => closeModal(btn.dataset.closeModal));
+    });
+    document.querySelectorAll('.modal-backdrop').forEach((backdrop) => {
+        backdrop.addEventListener('click', (e) => {
+            if (e.target === backdrop) closeModal(backdrop.id);
+        });
+    });
+    document.getElementById('themeBtn').addEventListener('click', () => openModal('themeModal'));
+}
 
 // ── Tabs ──
 document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -402,12 +423,12 @@ async function renderFavourites() {
     if (favs.length === 0) {
         container.innerHTML = `
       <div class="all-clear">
-        <span class="all-clear-icon">
+        <span class="all-clear-icon muted">
           <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.35">
             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
           </svg>
         </span>
-        <h3 style="color:var(--text-muted)">No Favourites Yet</h3>
+        <h3 class="muted">No Favourites Yet</h3>
         <p>Star stations from the Crowd Now tab to save them here.</p>
       </div>`;
         return;
@@ -550,7 +571,7 @@ function getLineInfo(code) {
     return ALERT_LINES.find(l => l.code === code) || {
         code,
         label: code,
-        color: '#888'
+        color: 'var(--muted)'
     };
 }
 
@@ -569,7 +590,7 @@ function renderAlerts(data) {
         ${notices.map(n => `
           <div class="card-message">${n.Content}</div>
           ${n.CreatedDate ? `<div class="data-note">Issued: ${formatDateTime(n.CreatedDate)}</div>` : ''}
-        `).join('<hr style="margin:10px 0;border-color:var(--border-color,#333)">')}
+        `).join('<hr class="card-divider">')}
       </div>` : '';
 
     if (overallStatus <= 1 && disruptions.length === 0) {
@@ -577,7 +598,7 @@ function renderAlerts(data) {
         container.innerHTML = `
       <div class="all-clear">
         <span class="all-clear-icon">
-          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
             <polyline points="22 4 12 14.01 9 11.01"/>
           </svg>
@@ -673,7 +694,7 @@ function renderLifts(data) {
         container.innerHTML = `
       <div class="all-clear">
         <span class="all-clear-icon">
-          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <rect x="5" y="2" width="14" height="20" rx="2"/>
             <polyline points="9 10 12 7 15 10"/>
             <polyline points="9 14 12 17 15 14"/>
@@ -714,7 +735,7 @@ function renderLifts(data) {
             liftGrid.appendChild(card);
         });
         if (items.length === 0) {
-            liftGrid.innerHTML = '<div class="data-note" style="padding:20px">No matching stations found.</div>';
+            liftGrid.innerHTML = '<div class="data-note inline">No matching stations found.</div>';
         }
     }
 
@@ -749,10 +770,10 @@ const CROWD_LABEL = {
     na: 'N/A'
 };
 const CROWD_COLOR = {
-    l: '#4caf82',
-    m: '#ff9800',
-    h: '#f44336',
-    na: '#9e9e9e'
+    l: 'var(--ok)',
+    m: 'var(--warn)',
+    h: 'var(--error)',
+    na: 'var(--busy)'
 };
 
 function stationSortKey(code) {
@@ -773,20 +794,20 @@ function renderCrowdNow(data, lineCode) {
     if (records.length === 0) {
         container.innerHTML = `
       <div class="all-clear">
-        <span class="all-clear-icon">
-          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.5" stroke-linecap="round" opacity="0.6">
+        <span class="all-clear-icon muted">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.6">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
             <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
           </svg>
         </span>
-        <h3 style="color:var(--text-muted)">No Data Available</h3>
+        <h3 class="muted">No Data Available</h3>
         <p>Crowd density data is not available for ${lineCode} at this time.</p>
       </div>`;
         return;
     }
 
     const line = LINES.find(l => l.code === lineCode) || {
-        color: '#888'
+        color: 'var(--muted)'
     };
 
     container.innerHTML = `
@@ -826,7 +847,7 @@ function renderCrowdNow(data, lineCode) {
             crowdGrid.appendChild(card);
         });
         if (items.length === 0) {
-            crowdGrid.innerHTML = '<div class="data-note" style="padding:20px">No matching stations.</div>';
+            crowdGrid.innerHTML = '<div class="data-note inline">No matching stations.</div>';
         }
     }
 
@@ -921,15 +942,10 @@ function setupAutoRefresh() {
 }
 
 // ── Forecast Modal ──
-const forecastModal = document.getElementById('forecast-modal');
-document.getElementById('forecast-modal-close').addEventListener('click', () => {
-    forecastModal.hidden = true;
-});
-forecastModal.addEventListener('click', (e) => {
-    if (e.target === forecastModal) forecastModal.hidden = true;
-});
+// Open and close wiring lives in wireModals(); this only handles Escape.
 document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !forecastModal.hidden) forecastModal.hidden = true;
+    if (e.key !== 'Escape') return;
+    document.querySelectorAll('.modal-backdrop:not(.hidden)').forEach(m => closeModal(m.id));
 });
 
 async function openForecastModal(stationCode, lineCode) {
@@ -937,18 +953,18 @@ async function openForecastModal(stationCode, lineCode) {
     const bodyEl = document.getElementById('forecast-modal-body');
 
     const name = stationName(stationCode) || stationCode;
-    const lineInfo = LINES.find(l => l.code === lineCode) || { label: lineCode, color: '#888', code: lineCode };
+    const lineInfo = LINES.find(l => l.code === lineCode) || { label: lineCode, color: 'var(--muted)', code: lineCode };
     const allLines = getStationLines(stationCode);
     const badgesHtml = (allLines.length ? allLines : [lineInfo])
         .map(l => `<span class="line-badge" style="background:${l.color};font-size:0.7rem">${l.code}</span>`)
         .join('');
 
     titleEl.innerHTML = `
-        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">${badgesHtml}</div>
-        <div>${name} <span style="font-size:0.68rem;color:var(--text-muted);font-family:'Noto Sans',monospace">${stationCode}</span></div>
+        <div class="badge-row">${badgesHtml}</div>
+        <div>${name} <span class="forecast-modal-code">${stationCode}</span></div>
     `;
-    bodyEl.innerHTML = `<div class="loading-state" style="padding:30px 0"><div class="spinner"></div><span>Loading forecast…</span></div>`;
-    forecastModal.hidden = false;
+    bodyEl.innerHTML = `<div class="loading-state"><div class="spinner"></div><span>Loading forecast…</span></div>`;
+    openModal('forecast-modal');
 
     try {
         const data = await apiFetch(`/api/crowd-forecast?line=${encodeURIComponent(lineCode)}`);
@@ -977,7 +993,7 @@ async function openForecastModal(stationCode, lineCode) {
 
 function renderForecastChart(container, slots) {
     if (slots.length === 0) {
-        container.innerHTML = `<div class="data-note" style="padding:24px">No forecast data available for this station today.</div>`;
+        container.innerHTML = `<div class="data-note inline">No forecast data available for this station today.</div>`;
         return;
     }
 
@@ -1026,6 +1042,11 @@ if ('serviceWorker' in navigator) {
 
 // ── Init ──
 (async () => {
+    initTheme();
+    hydrateIcons();
+    updateThemeButtonIcon();
+    buildThemeModal();
+    wireModals();
     buildLineSelectors();
     fetchAlerts();
     setupAutoRefresh();

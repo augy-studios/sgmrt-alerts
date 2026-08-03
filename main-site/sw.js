@@ -1,4 +1,4 @@
-const CACHE = "sgma-v11";
+const CACHE = "sgma-v12";
 
 const ASSETS = [
   "/",
@@ -7,6 +7,9 @@ const ASSETS = [
   "/style.css",
   "/404.css",
   "/script.js",
+  "/js/theme.js",
+  "/js/icons.js",
+  "/js/ui.js",
   "/SGMA-main.png",
   "/SGMA-192.png",
   "/SGMA-512.png",

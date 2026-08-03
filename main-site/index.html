@@ -29,7 +29,17 @@
     <meta property="og:site_name" content="UwU Apps" />
     <meta property="og:description" content="Real-time Singapore MRT situational awareness at your fingertips!" />
 
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Jua">
+    <script>
+        (function () {
+            var k = "sgmrtalerts";
+            var m = localStorage.getItem(k + ".mode") || "light";
+            var c = localStorage.getItem(k + ".colorTheme") || "classic";
+            document.documentElement.setAttribute("data-mode", m);
+            document.documentElement.setAttribute("data-color-theme", c);
+        })();
+    </script>
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&display=swap">
     <link rel="stylesheet" href="/style.css">
     <meta name="theme-color" content="#ccffcc" />
 
@@ -45,70 +55,7 @@
     <script defer="" src="https://use.fontawesome.com/releases/v6.5.2/js/all.js"></script>
 </head>
 
-<body data-theme="classic">
-    <!-- Theme Modal -->
-    <div id="theme-modal" class="modal-overlay" hidden>
-        <div class="modal-box glass">
-            <div class="modal-header">
-                <span class="modal-title">Choose Theme</span>
-                <button class="modal-close" id="modal-close-btn" aria-label="Close">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                        stroke-linecap="round">
-                        <line x1="18" y1="6" x2="6" y2="18" />
-                        <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
-                </button>
-            </div>
-            <div class="theme-grid">
-                <button class="theme-swatch active" data-theme="classic" style="--sw:#ccffcc" title="Classic">
-                    <span class="swatch-dot"></span>
-                    <span>Classic</span>
-                </button>
-                <button class="theme-swatch" data-theme="rose" style="--sw:#ffcccc" title="Not green 1">
-                    <span class="swatch-dot"></span>
-                    <span>Not green 1</span>
-                </button>
-                <button class="theme-swatch" data-theme="lavender" style="--sw:#ccccff" title="Not green 2">
-                    <span class="swatch-dot"></span>
-                    <span>Not green 2</span>
-                </button>
-                <button class="theme-swatch" data-theme="butter" style="--sw:#ffffcc" title="Not green 3">
-                    <span class="swatch-dot"></span>
-                    <span>Not green 3</span>
-                </button>
-                <button class="theme-swatch" data-theme="lilac" style="--sw:#ffccff" title="Not green 4">
-                    <span class="swatch-dot"></span>
-                    <span>Not green 4</span>
-                </button>
-                <button class="theme-swatch" data-theme="sky" style="--sw:#ccffff" title="Not green 5">
-                    <span class="swatch-dot"></span>
-                    <span>Not green 5</span>
-                </button>
-                <button class="theme-swatch" data-theme="white" style="--sw:#f0f0f0" title="Really really light green">
-                    <span class="swatch-dot"></span>
-                    <span>Really really light green</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Forecast Modal -->
-    <div id="forecast-modal" class="modal-overlay" hidden>
-        <div class="modal-box glass forecast-modal-box">
-            <div class="modal-header">
-                <div id="forecast-modal-title" class="forecast-modal-title"></div>
-                <button class="modal-close" id="forecast-modal-close" aria-label="Close">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                        stroke-linecap="round">
-                        <line x1="18" y1="6" x2="6" y2="18" />
-                        <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
-                </button>
-            </div>
-            <div id="forecast-modal-body" class="forecast-modal-body"></div>
-        </div>
-    </div>
-
+<body>
     <!-- Header -->
     <header class="app-header glass">
         <div class="header-inner">
@@ -135,13 +82,8 @@
                         <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
                     </svg>
                 </a>
-                <button class="icon-btn" id="theme-btn" aria-label="Change theme" title="Change theme">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="5" />
-                        <path
-                            d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-                    </svg>
+                <button class="icon-btn" id="themeBtn" type="button" aria-label="Theme" title="Theme">
+                    <span data-icon="sun"></span>
                 </button>
                 <button class="icon-btn" id="refresh-btn" aria-label="Refresh data" title="Refresh">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -272,8 +214,40 @@
     <footer class="app-footer">
         <span>Data from <a href="https://datamall.lta.gov.sg" target="_blank" rel="noopener">LTA DataMall</a></span>
         <span class="footer-sep">·</span>
-        <span>Made with ❤️ by Augy</span>
+        <span>Made with <span class="footer-heart" data-icon="heart"></span> by Augy</span>
     </footer>
+
+    <!-- Theme Modal -->
+    <div class="modal-backdrop hidden" id="themeModal">
+        <div class="modal glass" role="dialog" aria-modal="true" aria-labelledby="themeModalTitle">
+            <div class="modal-head">
+                <h2 id="themeModalTitle">Theme</h2>
+                <button class="icon-btn small" type="button" data-close-modal="themeModal" aria-label="Close">
+                    <span data-icon="close"></span>
+                </button>
+            </div>
+            <p class="modal-section-label">Mode</p>
+            <div class="mode-toggle" id="modeToggle">
+                <button class="mode-btn" type="button" data-mode="light" aria-pressed="false"><span data-icon="sun"></span>Light</button>
+                <button class="mode-btn" type="button" data-mode="dark" aria-pressed="false"><span data-icon="moon"></span>Dark</button>
+            </div>
+            <p class="modal-section-label">Brand colour</p>
+            <div class="swatch-grid" id="swatchGrid"></div>
+        </div>
+    </div>
+
+    <!-- Forecast Modal -->
+    <div class="modal-backdrop hidden" id="forecast-modal">
+        <div class="modal glass forecast-modal" role="dialog" aria-modal="true" aria-labelledby="forecast-modal-title">
+            <div class="modal-head">
+                <div id="forecast-modal-title" class="forecast-modal-title"></div>
+                <button class="icon-btn small" type="button" data-close-modal="forecast-modal" aria-label="Close">
+                    <span data-icon="close"></span>
+                </button>
+            </div>
+            <div id="forecast-modal-body" class="forecast-modal-body"></div>
+        </div>
+    </div>
 
     <script type="module" src="/script.js"></script>
 
