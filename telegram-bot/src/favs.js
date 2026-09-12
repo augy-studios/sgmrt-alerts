@@ -3,16 +3,18 @@
 const favourites = require('./favourites');
 const { lineForCode } = require('./stations');
 const { fetchCrowdRealtime } = require('./lta');
-const { formatFavouriteLine } = require('./format');
+const { formatFavourites } = require('./format');
 const { favsPageKeyboard } = require('./keyboards');
 
 const PAGE_SIZE = 10;
 
+const EMPTY_TEXT = 'You haven’t favourited any stations yet.\nSend a station code or name (e.g. NS1 or Bishan) to look one up, then tap ⭐ Add Favourite.';
+
+// Returns { rich, keyboard } for a favourites page, or { text } (plain
+// one-off notice, no keyboard) when the user has no favourites.
 async function buildFavsPage(userId, page) {
     const allCodes = favourites.list(userId);
-    if (!allCodes.length) {
-        return { text: 'You haven’t favourited any stations yet\\.\nSend a station code or name \\(e\\.g\\. `NS1` or `Bishan`\\) to look one up, then tap ⭐ Add Favourite\\.', keyboard: undefined };
-    }
+    if (!allCodes.length) return { text: EMPTY_TEXT };
 
     const totalPages = Math.ceil(allCodes.length / PAGE_SIZE);
     const safePage = Math.min(Math.max(page, 0), totalPages - 1);
@@ -32,16 +34,17 @@ async function buildFavsPage(userId, page) {
         })
     );
 
-    const lines = pageCodes.map((code) => {
+    const entries = pageCodes.map((code) => {
         const line = lineForCode(code);
         const records = line ? realtimeByLine[line.code] || [] : [];
         const rec = records.find((r) => r.Station === code) || null;
-        return formatFavouriteLine(code, rec);
+        return { code, rec };
     });
 
-    const text = `⭐ *Your Favourite Stations* \\(Page ${safePage + 1}/${totalPages}\\)\n\n${lines.join('\n')}`;
-    const keyboard = favsPageKeyboard(pageCodes, safePage, totalPages);
-    return { text, keyboard };
+    return {
+        rich: formatFavourites(entries, safePage, totalPages),
+        keyboard: favsPageKeyboard(pageCodes, safePage, totalPages),
+    };
 }
 
 module.exports = { buildFavsPage };

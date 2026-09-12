@@ -42,7 +42,8 @@ src/
   lta.js          LTA DataMall client with in-process caching
   buttons.js      persistent SQLite-backed inline button registry
   chart.js        QuickChart forecast image rendering
-  format.js       Telegram MarkdownV2 message formatting/escaping
+  format.js       Rich Markdown view builders (rich + plain fallback) and escaping
+  reply.js        Telegram Rich Message send/edit helpers (Bot API 10.1+)
   keyboards.js    inline keyboard builders
   favourites.js   favourites table access
   subscriptions.js subscriptions table access

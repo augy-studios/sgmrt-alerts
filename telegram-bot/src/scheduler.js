@@ -5,7 +5,8 @@ const db = require('./db');
 const config = require('./config');
 const subscriptions = require('./subscriptions');
 const { fetchTrainAlerts } = require('./lta');
-const { formatAlerts } = require('./format');
+const { formatAlertUpdate } = require('./format');
+const { sendRichMessage } = require('./reply');
 
 const TICK_MS = 5_000;
 
@@ -66,10 +67,12 @@ async function pollAlerts(bot) {
     db.prepare('UPDATE alert_state SET status = ?, segments_hash = ?, notices_hash = ?, updated_at = ? WHERE id = 1')
         .run(status, segmentsHash, noticesHash, Date.now());
 
-    const text = `🔔 *Service status update*\n\n${formatAlerts(data)}`;
+    const rich = formatAlertUpdate(data);
     const subs = subscriptions.listAll();
     for (const sub of subs) {
-        bot.telegram.sendMessage(sub.chat_id, text, { parse_mode: 'MarkdownV2', disable_web_page_preview: true }).catch((err) => {
+        // sendRichMessage falls back to plain text itself; anything that
+        // still rejects here failed on both paths.
+        sendRichMessage(bot.telegram, sub.chat_id, rich).catch((err) => {
             const code = err?.response?.error_code;
             if (code === 403 || code === 400) subscriptions.remove(sub.user_id); // user blocked the bot / chat gone
         });

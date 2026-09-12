@@ -3,12 +3,13 @@
 const { fetchTrainAlerts } = require('../lta');
 const { formatAlerts } = require('../format');
 const { statusKeyboard } = require('../keyboards');
+const { sendRichMessage } = require('../reply');
 
 function register(bot) {
     bot.command('status', async (ctx) => {
         try {
             const data = await fetchTrainAlerts();
-            await ctx.reply(formatAlerts(data), { parse_mode: 'MarkdownV2', ...statusKeyboard() });
+            await sendRichMessage(ctx.telegram, ctx.chat.id, formatAlerts(data), statusKeyboard());
         } catch (err) {
             console.error('status command error:', err);
             await ctx.reply('⚠️ Unable to fetch service status right now. Please try again shortly.');

@@ -9,6 +9,7 @@ const { buildStationView } = require('./stationView');
 const { buildFavsPage } = require('./favs');
 const { stationKeyboard, statusKeyboard } = require('./keyboards');
 const { formatAlerts, CROWD_EMOJI, CROWD_LABEL } = require('./format');
+const { sendRichMessage, editRichMessage } = require('./reply');
 
 const FORECAST_LEGEND = ['l', 'm', 'h'].map((lvl) => `${CROWD_EMOJI[lvl]} ${CROWD_LABEL[lvl]}`).join('   ');
 
@@ -53,7 +54,7 @@ async function handleView(ctx, code) {
             await ctx.reply('Unknown station.');
             return;
         }
-        await ctx.reply(view.text, { parse_mode: 'MarkdownV2', ...view.keyboard });
+        await sendRichMessage(ctx.telegram, ctx.chat.id, view.rich, view.keyboard);
     } catch (err) {
         console.error('view callback error:', err);
         await ctx.reply('⚠️ Unable to load that station right now. Please try again shortly.');
@@ -62,9 +63,14 @@ async function handleView(ctx, code) {
 
 async function handleFavsPage(ctx, page) {
     try {
-        const { text, keyboard } = await buildFavsPage(ctx.from.id, Number(page));
+        const view = await buildFavsPage(ctx.from.id, Number(page));
         await ctx.answerCbQuery();
-        await ctx.editMessageText(text, { parse_mode: 'MarkdownV2', ...(keyboard || {}) });
+        if (view.text) {
+            // Favourites were all removed since this page was drawn.
+            await ctx.editMessageText(view.text);
+            return;
+        }
+        await editRichMessage(ctx, view.rich, view.keyboard);
     } catch (err) {
         console.error('favs_page callback error:', err);
         await ctx.answerCbQuery('Unable to load that page.', { show_alert: true });
@@ -74,15 +80,11 @@ async function handleFavsPage(ctx, page) {
 async function handleRefreshStatus(ctx) {
     try {
         const data = await fetchTrainAlerts();
-        const text = formatAlerts(data);
         await ctx.answerCbQuery('Refreshed');
-        await ctx.editMessageText(text, { parse_mode: 'MarkdownV2', ...statusKeyboard() });
+        // editRichMessage treats "message is not modified" as success, so an
+        // unchanged status isn't an error here.
+        await editRichMessage(ctx, formatAlerts(data), statusKeyboard());
     } catch (err) {
-        // Telegram errors when the new text is identical to the old one - not a real failure.
-        if (err?.response?.description?.includes('message is not modified')) {
-            await ctx.answerCbQuery('Already up to date');
-            return;
-        }
         console.error('refresh_status callback error:', err);
         await ctx.answerCbQuery('Unable to refresh right now.', { show_alert: true });
     }
