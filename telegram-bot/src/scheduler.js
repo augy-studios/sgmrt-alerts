@@ -34,13 +34,25 @@ function claimDueJobs(now) {
     return due;
 }
 
+// Last poll failure message, so an LTA outage is logged once when it starts
+// and once when it clears rather than a stack trace on every tick.
+let lastPollError = null;
+
 async function pollAlerts(bot) {
     let data;
     try {
         data = await fetchTrainAlerts();
     } catch (err) {
-        console.error('scheduler: failed to fetch train alerts:', err);
+        const message = err?.message || String(err);
+        if (message !== lastPollError) {
+            console.error(`scheduler: failed to fetch train alerts (will keep retrying quietly): ${message}`);
+            lastPollError = message;
+        }
         return;
+    }
+    if (lastPollError) {
+        console.log('scheduler: train alerts fetch recovered');
+        lastPollError = null;
     }
 
     const value = data?.value ?? data ?? {};

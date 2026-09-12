@@ -40,6 +40,19 @@ function isRateLimitFault(status, body) {
     return status === 429 || /ratelimit|spikearrest|quotaviolation/i.test(body || '');
 }
 
+// Upstream outages surface as nginx/Apigee gateway pages; worth one retry
+// before giving up, since they're often momentary.
+function isGatewayError(status) {
+    return status === 502 || status === 503 || status === 504;
+}
+
+// Error bodies are often full HTML pages - keep a one-line summary so the
+// logs stay readable during an outage.
+function summariseBody(body) {
+    const text = String(body || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    return text.length > 160 ? `${text.slice(0, 160)}…` : text;
+}
+
 const MAX_RETRIES = 2;
 
 async function ltaGet(path) {
@@ -48,11 +61,14 @@ async function ltaGet(path) {
         if (res.ok) return res.json();
 
         const body = await res.text().catch(() => '');
-        if (isRateLimitFault(res.status, body) && attempt < MAX_RETRIES) {
+        if ((isRateLimitFault(res.status, body) || isGatewayError(res.status)) && attempt < MAX_RETRIES) {
             await sleep(500 * 2 ** attempt); // 500ms, then 1000ms
             continue;
         }
-        throw new Error(`LTA API error ${res.status} for ${path}${body ? ` — ${body}` : ''}`);
+        const summary = summariseBody(body);
+        const err = new Error(`LTA API error ${res.status} for ${path}${summary ? ` — ${summary}` : ''}`);
+        err.status = res.status;
+        throw err;
     }
 }
 
