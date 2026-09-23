@@ -310,3 +310,40 @@ body {
     right: -100%;
   }
 }
+
+/* Update bar (drawn by js/update-bar.js). This page sits outside the theme
+   system, so the colours are its own. */
+.update-notice {
+  background: rgba(102, 255, 102, 0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  font-family: Jua, sans-serif;
+  font-size: 0.875rem;
+}
+
+.update-notice-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0.5rem 1rem;
+  padding-top: max(0.5rem, env(safe-area-inset-top));
+}
+
+.update-notice p { flex: 1 1 auto; min-width: 0; margin: 0; }
+
+.update-notice-btn {
+  flex: none;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 12px;
+  background: none;
+  color: white;
+  font: inherit;
+  cursor: pointer;
+}
+.update-notice-btn.primary {
+  background: #6f6;
+  color: #000065;
+}

@@ -198,7 +198,8 @@ body.modal-open { overflow: hidden; }
 
 /* ---- mode toggle ---- */
 .mode-toggle {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 6px;
   padding: 4px;
   border-radius: 14px;
@@ -222,6 +223,19 @@ body.modal-open { overflow: hidden; }
 .mode-btn.active {
   background: var(--brand-fill);
   color: var(--on-brand);
+}
+
+/* Time based mode. Light and dark stay side by side and the third spans the
+   row beneath them: two equal columns would put the longer label in a box
+   too narrow to read at 320px, and the full width row also signals this is
+   a different kind of choice, a rule for picking a mode rather than a mode. */
+.mode-btn-wide { grid-column: 1 / -1; }
+.mode-note {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  /* Sits on the modal's --surface-strong, where plain --muted misses AA in
+     dark mode. */
+  color: var(--muted-strong);
 }
 
 /* ---- swatch grid ---- */
@@ -262,6 +276,51 @@ body.modal-open { overflow: hidden; }
 
 @media (max-width: 480px) {
   .swatch-grid { grid-template-columns: 1fr; }
+}
+
+/* ---- Update bar (drawn by js/update-bar.js) ---- */
+/* Full width above the header, quieter than it, tinted enough to read as a
+   notice. The border carries the edge on the palest swatches. */
+.update-notice {
+  background: color-mix(in srgb, var(--brand) 12%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  color: var(--ink);
+  font-size: 0.875rem;
+  animation: update-notice-in 0.2s ease;
+}
+
+.update-notice-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0.5rem 1rem;
+  /* Under the notch on a phone, where the bar is the topmost thing on screen. */
+  padding-top: max(0.5rem, env(safe-area-inset-top));
+}
+
+.update-notice p { flex: 1 1 auto; min-width: 0; }
+
+.update-notice-btn {
+  flex: none;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  color: var(--ink);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.update-notice-btn.primary {
+  background: var(--brand-fill);
+  color: var(--on-brand);
+}
+.update-notice-btn:hover {
+  background: var(--brand-fill-strong);
+  color: var(--on-brand);
+}
+
+@keyframes update-notice-in {
+  from { opacity: 0; transform: translateY(-4px); }
 }
 
 /* ---- Header ---- */
