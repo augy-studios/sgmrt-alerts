@@ -1,7 +1,7 @@
 // Bump on every deploy that changes anything this worker serves. The browser
 // compares this file byte for byte, so an unchanged version means no update
 // reaches anybody and the update bar never appears.
-const CACHE = "sgma-v14";
+const CACHE = "sgma-v15";
 
 const ASSETS = [
   "/",

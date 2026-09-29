@@ -1252,8 +1252,25 @@ body.modal-open { overflow: hidden; }
 
 /* ---- Responsive ---- */
 @media (max-width: 600px) {
+  /* The brand plus the timestamp and four buttons are wider than a phone, so
+     the row scrolls sideways, like .tab-nav, instead of spilling off screen. */
   .header-inner {
     padding: 12px 14px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .header-inner::-webkit-scrollbar {
+    display: none;
+  }
+
+  .brand,
+  .header-actions {
+    flex-shrink: 0;
+  }
+
+  .brand-name {
+    white-space: nowrap;
   }
 
   .brand-sub {
