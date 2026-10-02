@@ -2,13 +2,14 @@
 
 const { resolveCallback } = require('./buttons');
 const favourites = require('./favourites');
+const subscriptions = require('./subscriptions');
 const { lineForCode, stationName } = require('./stations');
 const { getForecastSlotsForStation, fetchTrainAlerts } = require('./lta');
 const { renderForecastChart } = require('./chart');
 const { buildStationView } = require('./stationView');
 const { buildFavsPage } = require('./favs');
-const { stationKeyboard, statusKeyboard } = require('./keyboards');
-const { formatAlerts, CROWD_EMOJI, CROWD_LABEL } = require('./format');
+const { stationKeyboard, statusKeyboard, subModeKeyboard } = require('./keyboards');
+const { formatAlerts, formatSubscription, CROWD_EMOJI, CROWD_LABEL } = require('./format');
 const { sendRichMessage, editRichMessage } = require('./reply');
 
 const FORECAST_LEGEND = ['l', 'm', 'h'].map((lvl) => `${CROWD_EMOJI[lvl]} ${CROWD_LABEL[lvl]}`).join('   ');
@@ -90,6 +91,19 @@ async function handleRefreshStatus(ctx) {
     }
 }
 
+// Also re-subscribes, so tapping a mode under an old /sub reply after
+// /unsub does what the button says.
+async function handleSubMode(ctx, mode) {
+    if (!subscriptions.MODES.includes(mode)) return ctx.answerCbQuery();
+    subscriptions.setMode(ctx.from.id, ctx.chat.id, mode);
+    await ctx.answerCbQuery(mode === 'all' ? 'You’ll get all updates' : 'You’ll only get disruption updates');
+    try {
+        await ctx.editMessageText(formatSubscription(mode), subModeKeyboard(mode));
+    } catch {
+        // tapping the already-selected mode leaves the message unchanged - safe to ignore
+    }
+}
+
 function register(bot) {
     bot.on('callback_query', async (ctx) => {
         const row = resolveCallback(ctx.callbackQuery.data);
@@ -109,6 +123,8 @@ function register(bot) {
                 return handleFavsPage(ctx, row.payload);
             case 'refresh_status':
                 return handleRefreshStatus(ctx);
+            case 'sub_mode':
+                return handleSubMode(ctx, row.payload);
             case 'noop':
                 return ctx.answerCbQuery();
             default:

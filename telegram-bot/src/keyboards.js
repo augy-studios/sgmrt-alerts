@@ -16,6 +16,17 @@ function statusKeyboard() {
     return Markup.inlineKeyboard([[callbackButton('🔄 Refresh', 'refresh_status', '-')]]);
 }
 
+// Mode picker under the /sub reply; the current mode's icon becomes a tick.
+function subModeKeyboard(mode) {
+    const label = (value, icon, text) => `${mode === value ? '✅' : icon} ${text}`;
+    return Markup.inlineKeyboard([
+        [
+            callbackButton(label('all', '🔔', 'All updates'), 'sub_mode', 'all'),
+            callbackButton(label('disruptions', '⚠️', 'Disruptions only'), 'sub_mode', 'disruptions'),
+        ],
+    ]);
+}
+
 function stationKeyboard(code, userId) {
     const isFav = favourites.isFavourite(userId, code);
     return Markup.inlineKeyboard([
@@ -58,4 +69,4 @@ function favsPageKeyboard(pageCodes, page, totalPages) {
     return Markup.inlineKeyboard(rows);
 }
 
-module.exports = { startKeyboard, statusKeyboard, stationKeyboard, candidateListKeyboard, favsPageKeyboard };
+module.exports = { startKeyboard, statusKeyboard, subModeKeyboard, stationKeyboard, candidateListKeyboard, favsPageKeyboard };

@@ -138,6 +138,12 @@ function addNotices(doc, notices) {
     doc.blank().heading(2, 'Service Notices').bullets(notices.map((n) => String(n.Content)));
 }
 
+// Whether an alert payload's status/segments describe a disruption. Shared
+// by the summary below and the scheduler's "disruptions only" filter.
+function isDisrupted(status, segments) {
+    return status > 1 || segments.length > 0;
+}
+
 // Appends the train service alert summary to `doc` (shared by /status, the
 // refresh button and the /sub broadcast). `level` is the heading level of
 // the summary line, so it can sit under a title heading.
@@ -147,7 +153,7 @@ function addAlerts(doc, data, level = 1) {
     const segments = Array.isArray(value.AffectedSegments) ? value.AffectedSegments : [];
     const notices = Array.isArray(value.Message) ? value.Message : [];
 
-    if (status <= 1 && segments.length === 0) {
+    if (!isDisrupted(status, segments)) {
         doc.heading(level, '✅ All train services are operating normally').text('No disruptions reported.');
         addNotices(doc, notices);
         return doc;
@@ -187,6 +193,16 @@ function formatAlertUpdate(data) {
     return addAlerts(new RichDoc().heading(1, '🔔 Service status update').blank(), data, 2).build();
 }
 
+const SUB_MODE_TEXT = {
+    all: 'You’ll get an update here whenever train service status changes, including new service notices.',
+    disruptions: 'You’ll only get an update here when a disruption starts, changes, or clears.',
+};
+
+// Plain-text reply for /sub and the mode buttons under it.
+function formatSubscription(mode) {
+    return `🔔 Subscribed. ${SUB_MODE_TEXT[mode]}\n\nPick which updates you want below. Send /unsub to stop.`;
+}
+
 module.exports = {
     escapeMd,
     escapeCell,
@@ -200,4 +216,6 @@ module.exports = {
     formatCandidates,
     formatAlerts,
     formatAlertUpdate,
+    formatSubscription,
+    isDisrupted,
 };

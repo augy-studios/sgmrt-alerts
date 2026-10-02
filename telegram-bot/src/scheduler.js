@@ -5,7 +5,7 @@ const db = require('./db');
 const config = require('./config');
 const subscriptions = require('./subscriptions');
 const { fetchTrainAlerts } = require('./lta');
-const { formatAlertUpdate } = require('./format');
+const { formatAlertUpdate, isDisrupted } = require('./format');
 const { sendRichMessage } = require('./reply');
 
 const TICK_MS = 5_000;
@@ -79,9 +79,18 @@ async function pollAlerts(bot) {
     db.prepare('UPDATE alert_state SET status = ?, segments_hash = ?, notices_hash = ?, updated_at = ? WHERE id = 1')
         .run(status, segmentsHash, noticesHash, Date.now());
 
+    // "Disruptions only" subscribers get the update if a disruption is
+    // active either side of the change, so they also hear when it clears
+    // but skip notice-only changes while service is normal. Only the
+    // previous segments' hash is stored, so isDisrupted's rule is applied
+    // to that by hand.
+    const wasDisrupted = prev.status > 1 || prev.segments_hash !== hash([]);
+    const disruptionUpdate = wasDisrupted || isDisrupted(status, segments);
+
     const rich = formatAlertUpdate(data);
     const subs = subscriptions.listAll();
     for (const sub of subs) {
+        if (sub.mode === 'disruptions' && !disruptionUpdate) continue;
         // sendRichMessage falls back to plain text itself; anything that
         // still rejects here failed on both paths.
         sendRichMessage(bot.telegram, sub.chat_id, rich).catch((err) => {

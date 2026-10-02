@@ -16,7 +16,7 @@ const INTRO = new RichDoc()
         },
         '/status - train service alerts & service notices',
         '/favs - your favourited stations’ crowd levels',
-        '/sub - get updated whenever service status changes',
+        '/sub - get service status updates (all, or disruptions only)',
         '/unsub - stop those updates',
     ])
     .build();

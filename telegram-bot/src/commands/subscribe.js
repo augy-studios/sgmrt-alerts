@@ -1,11 +1,15 @@
 'use strict';
 
 const subscriptions = require('../subscriptions');
+const { subModeKeyboard } = require('../keyboards');
+const { formatSubscription } = require('../format');
 
 function register(bot) {
     bot.command('sub', async (ctx) => {
+        // Re-sending /sub keeps the existing mode and just shows the picker again.
         subscriptions.add(ctx.from.id, ctx.chat.id);
-        await ctx.reply('🔔 Subscribed. You’ll get an update here whenever train service status changes.\nSend /unsub to stop.');
+        const mode = subscriptions.getMode(ctx.from.id);
+        await ctx.reply(formatSubscription(mode), subModeKeyboard(mode));
     });
 
     bot.command('unsub', async (ctx) => {

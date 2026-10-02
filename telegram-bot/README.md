@@ -15,7 +15,8 @@ to a standalone Node.js bot.
   from favourites or view its crowd forecast as a chart image
 - 🔔 **/sub** / **/unsub** - get updated whenever train
   service status changes (new disruption, cleared disruption, or a new
-  service notice)
+  service notice), or pick **Disruptions only** under the /sub reply to skip
+  notice-only changes while service is normal
 - All inline buttons are backed by a SQLite table, so they keep working even
   after the bot process restarts - nothing lives only in memory
 

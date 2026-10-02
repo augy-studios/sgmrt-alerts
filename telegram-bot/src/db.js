@@ -20,10 +20,13 @@ db.exec(`
     PRIMARY KEY (user_id, station_code)
   );
 
+  -- mode: 'all' (every status change) or 'disruptions' (only while a
+  -- disruption is active, plus the update when it clears).
   CREATE TABLE IF NOT EXISTS subscriptions (
     user_id     INTEGER PRIMARY KEY,
     chat_id     INTEGER NOT NULL,
-    created_at  INTEGER NOT NULL
+    created_at  INTEGER NOT NULL,
+    mode        TEXT NOT NULL DEFAULT 'all'
   );
 
   -- Persistent inline-button registry. Every callback button's data is
@@ -57,5 +60,13 @@ db.exec(`
     updated_at      INTEGER
   );
 `);
+
+// subscriptions.mode was added after launch; CREATE TABLE IF NOT EXISTS
+// leaves older databases without it, so add it in place. Existing
+// subscribers default to 'all', which is what they signed up for.
+const subColumns = db.prepare('PRAGMA table_info(subscriptions)').all().map((c) => c.name);
+if (!subColumns.includes('mode')) {
+    db.exec("ALTER TABLE subscriptions ADD COLUMN mode TEXT NOT NULL DEFAULT 'all'");
+}
 
 module.exports = db;
